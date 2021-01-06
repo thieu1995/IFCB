@@ -19,3 +19,7 @@ class Config:
     METRICS = 'trade-off'  # power, latency, cost, trade-off
     MODE = 'time'  # time, epochs
 
+    TASKS = 50
+    FOGS = 20
+    CLOUDS = 5
+

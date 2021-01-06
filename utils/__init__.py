@@ -12,3 +12,4 @@ from .io_util import *
 from .ops_util import *
 from .schedule_util import *
 from .time_util import *
+from .graph_util import *
