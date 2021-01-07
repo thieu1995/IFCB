@@ -9,14 +9,13 @@
 
 from typing import List
 
-from computable import Cloud, Fog, Task
-
-from ..schedule import Schedule
+from .. import Cloud, Fog, Task, Schedule
 
 
 def data_forwarding_power(clouds: List[Cloud], fogs: List[Fog], tasks: List[Task], schedule: Schedule) -> float:
     fog_power = 0
     cloud_power = 0
+    blockchain_power = 0
 
     inverted_fog_schedule = [None for _ in range(schedule.n_tasks)]
     for fog_id, fog in enumerate(schedule.fog_schedule):

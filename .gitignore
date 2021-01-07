@@ -1,6 +1,9 @@
 drafts/
 .idea/
-
+model/blockchain/peer.py
+model/blockchain/simulation.py
+model/blockchain/wallet.py
+model/blockchain/blockchain.py
 
 
 # Byte-compiled / optimized / DLL files

@@ -7,157 +7,154 @@
 #       Github:     https://github.com/thieu1995                                                        %
 # ------------------------------------------------------------------------------------------------------%
 
-import random
+from numpy.random import randint, uniform, seed
+from numpy import ceil
+from model.fog import Fog
+from model.cloud import Cloud
+from model.task import Task
+from model.blockchain.node import Node
+from utils.io_util import dump_tasks, dump_nodes
+from config import DefaultData
 
-from model import Cloud, Fog, Task
-from utils.io_util import dump_cloudlets, dump_tasks
+
+def create_task():
+    r_p = randint(DefaultData.R_PROCESSING_BOUND[0], DefaultData.R_PROCESSING_BOUND[1])
+    r_s = randint(DefaultData.R_STORAGE_BOUND[0], DefaultData.R_STORAGE_BOUND[1])
+    q_p = randint(DefaultData.Q_PROCESSING_BOUND[0], DefaultData.Q_PROCESSING_BOUND[1])
+    q_s = randint(DefaultData.Q_STORAGE_BOUND[0], DefaultData.Q_STORAGE_BOUND[1])
+    label = 0 if uniform() < 0.5 else 1
+    sl_max = randint(DefaultData.SERVICE_LATENCY_MAX[0], DefaultData.SERVICE_LATENCY_MAX[1])
+    return Task(r_p, r_s, q_p, q_s, label, sl_max)
 
 
-def create_cloud():
-    cloud = Cloud()
+def create_cloud_node(id, name, location):
+    cloud = Cloud(id, name, location)
 
-    cloud.idle_beta = random.uniform(50, 200)  # power consumption - computation
-    cloud.beta = random.uniform(1e-9, 1e-6)  # power consumption - computation
+    cloud.alpha = uniform(5e-7, 5e-5)     # power consumption - data forwarding
+    cloud.beta = uniform(5e-9, 5e-7)      # power consumption - computation
+    cloud.gamma = uniform(5e-9, 5e-6)     # power consumption - storage
 
-    cloud.idle_alpha = random.uniform(30, 200)  # power consumption - storage
-    cloud.alpha = random.uniform(5e-9, 5e-6)  # power consumption - storage
+    cloud.eta = uniform(0.2, 5.0)         # latency - transmission
+    cloud.lamda = uniform(10e-8, 10e-7)   # latency - processing
 
-    cloud.lam_bda = random.uniform(1e-8, 1e-7)  # latency - processing
+    cloud.sigma = uniform(5e-9, 5e-8)     # cost - data forwarding
+    cloud.pi = uniform(5e-15, 5e-14)      # cost - computation
+    cloud.omega = uniform(5e-16, 5e-15)   # cost - storage
 
-    cloud.idle_pi = random.uniform(3.6e-7, 1.1e-6)  # cost - computation
-    cloud.pi = random.uniform(3.6e-15, 3.6e-14)  # cost - computation
+    cloud.alpha_idle = uniform(50, 200)   # power consumption - data forwarding - idle
+    cloud.beta_idle = uniform(100, 200)   # power consumption - computation - idle
+    cloud.gamma_idle = uniform(50, 200)   # power consumption - storage - idle
 
-    cloud.idle_omega = random.uniform(2e-8, 4e-8)  # cost - storage
-    cloud.omega = random.uniform(2e-16, 2e-15)  # cost - storage
+    cloud.sigma_idle = uniform(0.002, 0.01)   # cost - data forwarding - idle
+    cloud.pi_idle = uniform(5e-7, 5e-6)       # cost - computation - idle
+    cloud.omega_idle = uniform(2e-8, 5e-8)    # cost - storage - idle
 
     return cloud
 
 
-def create_fog(number_clouds):
-    fog = Fog()
-    idle_beta_range = [100, 500]  # power for computation idle
-    beta_range = [5e-7, 5e-4]  # power for computation
+def create_fog_node(id, name, location):
+    fog = Fog(id, name, location)
 
-    idle_alpha_range = [10, 100]  # power for storage idle
-    alpha_range = [5e-8, 5e-5]  # power for storage
+    fog.alpha = uniform(5e-8, 5e-6)     # power consumption - data forwarding
+    fog.beta = uniform(5e-7, 5e-4)      # power consumption - computation
+    fog.gamma = uniform(5e-8, 5e-6)     # power consumption - storage
 
-    idle_eg_gamma_range = [50, 200]  # power for data forwarding at edge gateway idle
-    eg_gamma_range = [5e-8, 5e-5]  # power for data forwarding at edge gateway
+    fog.eta = uniform(0.005, 0.05)      # latency - transmission
+    fog.lamda = uniform(10e-7, 10e-6)   # latency - processing
 
-    idle_fi_gamma_range = [50, 200]  # power for data forwarding at fog instance idle
-    fi_gammma_range = [5e-8, 5e-5]  # power for data forwarding at fog instance
+    fog.sigma = uniform(5e-10, 5e-9)    # cost - data forwarding
+    fog.pi = uniform(2e-15, 2e-14)      # cost - computation
+    fog.omega = uniform(10e-16, 10e-15) # cost - storage
 
-    lam_bda_range = [1e-8, 1e-7]  # processing latency
+    fog.alpha_idle = uniform(25, 75)    # power consumption - data forwarding - idle
+    fog.beta_idle = uniform(100, 500)   # power consumption - computation - idle
+    fog.gamma_idle = uniform(10, 100)   # power consumption - storage - idle
 
-    idle_pi_range = [1.8e-7, 5.5e-7]  # cost
-    pi_range = [1.8e-15, 1.8e-14]  # cost
+    fog.sigma_idle = uniform(0.001, 0.01)   # cost - data forwarding - idle
+    fog.pi_idle = uniform(2e-7, 5e-7)       # cost - computation - idle
+    fog.omega_idle = uniform(10e-8, 20e-8)  # cost - storage - idle
 
-    idle_omega_range = [1e-8, 2e-8]  # cost
-    omega_range = [1e-16, 1e-15]  # cost
+    fog.alpha_device = uniform(5e-8, 5e-5)          # power consumption - data forwarding - end device to fog
+    fog.alpha_device_idle = uniform(50, 200)        # power consumption - data forwarding
 
-    ef_delta_range = [0.005, 0.05]  # tranmission latency
+    fog.sigma_device = uniform(5e-10, 5e-9)         # cost - data forwarding - end device to fog
+    fog.sigma_device_idle = uniform(0.001, 0.008)   # cost - data forwarding - idle state
 
-    idle_eg_sigma_range = [0.001, 0.008]  # cost data forwarding
-    eg_sigma_range = [5e-10, 5e-9]  # cost data forwarding
-
-    idle_fi_sigma_range = [0.001, 0.01]  # cost data forwarding
-    fi_sigma_range = [5e-10, 5e-9]  # cost data forwarding
-
-    tau = random.randint(0, 20)
-    # tau = 0
-
-    idle_cl_gamma_range = [50, 75]  # power cloud
-    cl_gamma_range = [5e-7, 5e-6]  # power cloud
-
-    fg_delta_range = [0.2, 5.0]  # latency
-
-    idle_cl_sigma_range = [0.02, 0.1]  # cost
-    cl_sigma_range = [5e-9, 5e-8]  # cost
-
-    fog.idle_beta = random.uniform(idle_beta_range[0], idle_beta_range[1])  # power for computation idle
-    fog.beta = random.uniform(beta_range[0], beta_range[1])  # power for computation
-
-    fog.idle_alpha = random.uniform(idle_alpha_range[0], idle_alpha_range[1])  # power for storage idle
-    fog.alpha = random.uniform(alpha_range[0], alpha_range[1])  # power for storage
-
-    fog.idle_eg_gamma = random.uniform(idle_eg_gamma_range[0], idle_eg_gamma_range[1])  # power for data forwarding at edge gateway idle
-    fog.eg_gamma = random.uniform(eg_gamma_range[0], eg_gamma_range[1])  # power for data forwarding at edge gateway
-
-    fog.idle_fi_gamma = random.uniform(idle_fi_gamma_range[0], idle_fi_gamma_range[1])  # power for data forwarding at fog instance idle
-    fog.fi_gammma = random.uniform(fi_gammma_range[0], fi_gammma_range[1])  # power for data forwarding at fog instance
-
-    fog.idle_cl_gamma = [float('inf') for _ in range(number_clouds)]  # power for data forwarding at cloud nodes idle
-    fog.cl_gamma = [float('inf') for _ in range(number_clouds)]  # power for data forwarding at cloud nodes
-
-    fog.lam_bda = random.uniform(lam_bda_range[0], lam_bda_range[1])
-
-    fog.idle_pi = random.uniform(idle_pi_range[0], idle_pi_range[1])
-    fog.pi = random.uniform(pi_range[0], pi_range[1])
-
-    fog.idle_omega = random.uniform(idle_omega_range[0], idle_omega_range[1])
-    fog.omega = random.uniform(omega_range[0], omega_range[1])
-
-    fog.ef_delta = random.uniform(ef_delta_range[0], ef_delta_range[1])
-    fog.fg_delta = [float('inf') for _ in range(number_clouds)]
-
-    fog.idle_eg_sigma = random.uniform(idle_eg_sigma_range[0], idle_eg_sigma_range[1])
-    fog.eg_sigma = random.uniform(eg_sigma_range[0], eg_sigma_range[1])
-
-    fog.idle_fi_sigma = random.uniform(idle_fi_sigma_range[0], idle_fi_sigma_range[1])
-    fog.fi_sigma = random.uniform(fi_sigma_range[0], fi_sigma_range[1])
-
-    fog.idle_cl_sigma = [float('inf') for _ in range(number_clouds)]
-    fog.cl_sigma = [float('inf') for _ in range(number_clouds)]
-
-    fog.tau = random.randint(0, 20)
-
-    # ensure each fog always connects at least a cloud
-    i = random.randrange(number_clouds)
-    fog.idle_cl_gamma[i] = random.uniform(idle_cl_gamma_range[0], idle_cl_gamma_range[1])
-    fog.cl_gamma[i] = random.uniform(cl_gamma_range[0], cl_gamma_range[1])
-
-    fog.fg_delta[i] = random.uniform(fg_delta_range[0], fg_delta_range[1])
-
-    fog.idle_cl_sigma[i] = random.uniform(idle_cl_sigma_range[0], idle_cl_sigma_range[1])
-    fog.cl_sigma[i] = random.uniform(cl_sigma_range[0], cl_sigma_range[1])
-
-    for i in range(number_clouds):
-        if random.random() < 1:
-            fog.idle_cl_gamma[i] = random.uniform(idle_cl_gamma_range[0], idle_cl_gamma_range[1])
-            fog.cl_gamma[i] = random.uniform(cl_gamma_range[0], cl_gamma_range[1])
-
-            fog.fg_delta[i] = random.uniform(fg_delta_range[0], fg_delta_range[1])
-
-            fog.idle_cl_sigma[i] = random.uniform(idle_cl_sigma_range[0], idle_cl_sigma_range[1])
-            fog.cl_sigma[i] = random.uniform(cl_sigma_range[0], cl_sigma_range[1])
-
+    fog.tau = randint(5, 20)
     return fog
 
 
-def create_task():
-    task = Task()
-    task.p_r = random.randint(100_000, 100_000_000)  # 0.1 MB - 10 MB
-    task.p_s = random.randint(100_000, 100_000_000)
-    task.q_r = random.randint(100_000, 100_000_000)
-    task.q_s = random.randint(100_000, 100_000_000)
-    return task
+def create_blockchain_node(id, name, location):
+    node = Node(id, name, location)
+
+    node.alpha = uniform(5e-10, 5e-9)       # power consumption - data forwarding
+    node.gamma = uniform(5e-10, 5e-8)       # power consumption - storage
+
+    node.sigma = uniform(5e-10, 5e-8)       # cost - data forwarding
+    node.omega = uniform(10e-18, 10e-16)    # cost - storage
+
+    node.alpha_sm = uniform(100, 250)       # power consumption - data forwarding - idle
+    node.gamma_sm = uniform(50, 200)        # power consumption - storage - idle
+
+    node.sigma_sm = uniform(0.0001, 0.001)  # cost - data forwarding - idle
+    node.omega_sm = uniform(10e-10, 10e-8)  # cost - storage - idle
+
+    return node
 
 
 if __name__ == '__main__':
-    random.seed(None)
-
-    # number_clouds = input('Number clouds: ')
-    # number_fogs = input('Number fogs: ')
-    number_clouds = 5
-    number_fogs = 20
-    # number_tasks = input('Number tasks: ')
-    number_tasks = range(50, 501, 50)
-    # print(number_tasks)
-
-    clouds = [create_cloud() for _ in range(int(number_clouds))]
-    fogs = [create_fog(int(number_clouds)) for _ in range(int(number_fogs))]
-    dump_cloudlets(clouds, fogs)
-    for _number_tasks in number_tasks:
-        tasks = [create_task() for _ in range(int(_number_tasks))]
+    seed(11)
+    number_tasks = DefaultData.TASK_LIST
+    for task in number_tasks:
+        tasks = [create_task() for _ in range(int(task))]
         dump_tasks(tasks)
 
+    number_fogs = DefaultData.NUM_FOGS
+    number_clouds = DefaultData.NUM_CLOUDS
+    number_peers = DefaultData.NUM_PEERS
+
+    clouds = []
+    for idx in range(number_clouds):
+        name = "Cloud Node: " + str(idx)
+        location = {
+            "long": uniform(DefaultData.LOC_LONG_BOUND[0], DefaultData.LOC_LONG_BOUND[1]),
+            "lat": uniform(DefaultData.LOC_LAT_BOUND[0], DefaultData.LOC_LAT_BOUND[1]),
+        }
+        clouds.append(create_cloud_node(idx, name, location))
+
+    fogs = []
+    for idx in range(number_fogs):
+        name = "Fog Node: " + str(idx)
+        location = {
+            "long": uniform(DefaultData.LOC_LONG_BOUND[0], DefaultData.LOC_LONG_BOUND[1]),
+            "lat": uniform(DefaultData.LOC_LAT_BOUND[0], DefaultData.LOC_LAT_BOUND[1]),
+        }
+        fogs.append(create_fog_node(idx, name, location))
+
+    peers = []
+    for idx in range(number_peers):
+        name = "Peer Node: " + str(idx)
+        location = {
+            "long": uniform(DefaultData.LOC_LONG_BOUND[0], DefaultData.LOC_LONG_BOUND[1]),
+            "lat": uniform(DefaultData.LOC_LAT_BOUND[0], DefaultData.LOC_LAT_BOUND[1]),
+        }
+        peers.append(create_blockchain_node(idx, name, location))
+
+    ## Connecting fog and cloud, fog and blockchain
+    for id_fog, fog in enumerate(fogs):
+        dist_list = []
+        for id_cloud, cloud in enumerate(clouds):
+            dist_temp = cloud.dist(fog)
+            dist_list.append([hash(cloud), dist_temp])
+        dist_list = sorted(dist_list, key=lambda item: item[1])
+        fog.linked_clouds = dist_list[:int(ceil(DefaultData.RATE_FOG_CLOUD_LINKED * number_clouds))]
+
+        dist_list = []
+        for id_peer, peer in enumerate(peers):
+            dist_temp = peer.dist(fog)
+            dist_list.append([hash(peer), dist_temp])
+        dist_list = sorted(dist_list, key=lambda item: item[1])
+        fog.linked_peers = dist_list[:int(ceil(DefaultData.RATE_FOG_PEER_LINKED * number_peers))]
+
+    ## Saving fog/cloud nodes and blockchain peers
+    dump_nodes(clouds, fogs, peers)

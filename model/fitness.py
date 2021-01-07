@@ -8,9 +8,8 @@
 # ------------------------------------------------------------------------------------------------------%
 
 from typing import List
-from model import Cloud, Fog, Task
+from model import Cloud, Fog, Task, formulas
 from config import *
-from optimizer import formulas
 from .schedule import Schedule
 
 

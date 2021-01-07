@@ -7,8 +7,19 @@
 #       Github:     https://github.com/thieu1995                                                        %
 # ------------------------------------------------------------------------------------------------------%
 
-from .base import Base
+from numpy import array
+from model.base import Base
 
 
 class Cloud(Base):
-    pass
+
+    def __init__(self, id: int, name: str, location: array):
+        super().__init__(id, name, location)
+
+        self.alpha_idle = 0     # power consumption - data forwarding - idle
+        self.beta_idle = 0      # power consumption - computation - idle
+        self.gamma_idle = 0     # power consumption - storage - idle
+
+        self.sigma_idle = 0     # cost - data forwarding - idle
+        self.pi_idle = 0        # cost - computation - idle
+        self.omega_idle = 0     # cost - storage - idle

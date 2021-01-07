@@ -7,7 +7,3 @@
 #       Github:     https://github.com/thieu1995                                                        %
 # ------------------------------------------------------------------------------------------------------%
 
-from .GA import GAEngine
-from .PSO import PSOEngine
-from .WOA import WoaEngine
-from .formulas import *

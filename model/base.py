@@ -8,30 +8,37 @@
 # ------------------------------------------------------------------------------------------------------%
 
 from abc import ABC
-
-from utils import ToDict
+from utils.dict_util import ToDict
+from numpy import array, sqrt, sum
+from json import dumps
 
 
 class Base(ABC, ToDict):
 
-    def __init__(self):
-        self.idle_beta = 0  # power consumption - computation
-        self.beta = 0  # power consumption - computation
+    def __init__(self, id:int, name:str, location:array) -> None:
+        self.id = id
+        self.name = name
+        self.location = location
 
-        self.idle_alpha = 0  # power consumption - storage
-        self.alpha = 0  # power consumption - storage
+        self.alpha = 0      # power consumption - data forwarding
+        self.beta = 0       # power consumption - computation
+        self.gamma = 0      # power consumption - storage
 
-        self.lam_bda = 0  # latency - processing
+        self.eta = 0        # latency - transmission
+        self.lamda = 0      # latency - processing
 
-        self.idle_pi = 0  # cost - computation
-        self.pi = 0  # cost - computation
-
-        self.idle_omega = 0  # cost - storage
-        self.omega = 0  # cost - storage
+        self.sigma = 0      # cost - data forwarding
+        self.pi = 0         # cost - computation
+        self.omega = 0      # cost - storage
 
     def __repr__(self):
         return str(self.to_dict())
 
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.id == other.id and self.name == other.name and self.location == other.location
 
+    def __hash__(self):
+        return hash((self.id, self.name, dumps(self.location)))
 
-
+    def dist(self, other) -> float:
+        return sqrt(sum((self.location.get(d, 0) - other.location.get(d, 0)) ** 2 for d in set(self.location) | set(other.location)))

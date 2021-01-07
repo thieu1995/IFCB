@@ -11,21 +11,12 @@ import json
 from pathlib import Path
 from typing import List, Tuple
 
-from model import Cloud, Fog, Task
+from model.cloud import Cloud
+from model.fog import Fog
+from model.task import Task
+from model.blockchain.node import Node
+
 from config import Config
-
-
-def dump_cloudlets(clouds: List[Cloud], fogs: List[Fog]) -> None:
-    data = {
-        'fogs': [f.to_dict() for f in fogs],
-        'clouds': [c.to_dict() for c in clouds],
-    }
-
-    output_file = Path(f'{Config.INPUT_DATA}/cloudlet_{len(clouds)}_{len(fogs)}.json')
-    output_file.parent.mkdir(parents=True, exist_ok=True)
-
-    with output_file.open('w', encoding='utf-8') as outfile:
-        json.dump(data, outfile, indent=2)
 
 
 def dump_tasks(tasks: List[Task]) -> None:
@@ -35,7 +26,22 @@ def dump_tasks(tasks: List[Task]) -> None:
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
     with output_file.open('w', encoding='utf-8') as outfile:
-        json.dump(tasks, outfile, indent=2)
+        json.dump(tasks, outfile, indent=4)
+
+
+
+def dump_nodes(clouds: List[Cloud], fogs: List[Fog], peers: List[Node]) -> None:
+    data = {
+        'fogs': [f.to_dict() for f in fogs],
+        'clouds': [c.to_dict() for c in clouds],
+        'peers': [c.to_dict() for c in peers],
+    }
+
+    output_file = Path(f'{Config.INPUT_DATA}/nodes_{len(clouds)}_{len(fogs)}_{len(peers)}.json')
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+
+    with output_file.open('w', encoding='utf-8') as outfile:
+        json.dump(data, outfile, indent=4)
 
 
 def load_tasks(filename: str) -> List[Task]:

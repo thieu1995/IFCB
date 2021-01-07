@@ -8,32 +8,29 @@
 # ------------------------------------------------------------------------------------------------------%
 
 from .base import Base
+from numpy import array
 
 
 class Fog(Base):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, id:int, name:str, location:array):
+        super().__init__(id, name, location)
 
-        self.idle_eg_gamma = 0  # power consumption - data forwarding
-        self.eg_gamma = 0  # power consumption - data forwarding
+        self.alpha_idle = 0     # power consumption - data forwarding - idle
+        self.beta_idle = 0      # power consumption - computation - idle
+        self.gamma_idle = 0     # power consumption - storage - idle
 
-        self.idle_fi_gamma = 0  # power consumption - data forwarding
-        self.fi_gamma = 0  # power consumption - data forwarding
+        self.sigma_idle = 0     # cost - data forwarding - idle
+        self.pi_idle = 0        # cost - computation - idle
+        self.omega_idle = 0     # cost - storage - idle
 
-        self.idle_cl_gamma = []  # power consumption - data forwarding
-        self.cl_gamma = []  # power consumption - data forwarding
+        self.alpha_device = 0       # power consumption - data forwarding - end device to fog
+        self.alpha_device_idle = 0  # power consumption - data forwarding
 
-        self.ef_delta = 0  # latency - transmission
-        self.fg_delta = []  # latency - transmission
-
-        self.idle_eg_sigma = 0  # cost - data forwarding
-        self.eg_sigma = 0  # cost - data forwarding
-
-        self.idle_fi_sigma = 0  # cost - data forwarding
-        self.fi_sigma = 0  # cost - data forwarding
-
-        self.idle_cl_sigma = []  # cost - data forwarding
-        self.cl_sigma = []  # cost - data forwarding
+        self.sigma_device = 0       # cost - data forwarding - end device to fog
+        self.sigma_device_idle = 0  # cost - data forwarding - idle state
 
         self.tau = 10_000  # time-to-live
+
+        self.linked_clouds = []
+        self.linked_peers = []
