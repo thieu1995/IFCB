@@ -49,7 +49,7 @@ def computation_power(clouds: List[Cloud], fogs: List[Fog], tasks: List[Task], s
     for time_slot in range(schedule.total_time):
         for fog_id, fog_node in enumerate(schedule.fog_schedule):
             fog = fogs[fog_id]
-            fog_power += fog.idle_beta
+            fog_power += fog.beta_idle
             if len(fog_node) > time_slot:
                 task_id = fog_node[time_slot]
                 task = tasks[task_id]
@@ -62,7 +62,7 @@ def computation_power(clouds: List[Cloud], fogs: List[Fog], tasks: List[Task], s
 
         for cloud_id, cloud_node in enumerate(schedule.cloud_schedule):
             cloud = clouds[cloud_id]
-            cloud_power += cloud.idle_beta
+            cloud_power += cloud.beta_idle
             if len(cloud_node) > time_slot:
                 task_id = cloud_node[time_slot]
                 task = tasks[task_id]
@@ -82,7 +82,7 @@ def storage_power(clouds: List[Cloud], fogs: List[Fog], tasks: List[Task], sched
     for time_slot in range(schedule.total_time):
         for cloud_id, cloud_node in enumerate(schedule.cloud_schedule):
             cloud = clouds[cloud_id]
-            cloud_power += cloud.idle_alpha
+            cloud_power += cloud.alpha_idle
             for i in range(time_slot):
                 if len(cloud_node) > i:
                     task = tasks[cloud_node[i]]
@@ -90,7 +90,7 @@ def storage_power(clouds: List[Cloud], fogs: List[Fog], tasks: List[Task], sched
 
         for fog_id, fog_node in enumerate(schedule.fog_schedule):
             fog = fogs[fog_id]
-            fog_power += fog.idle_alpha
+            fog_power += fog.alpha_idle
             start_time_slot = max(0, time_slot - fog.tau)
             for i in range(start_time_slot, time_slot):
                 if len(fog_node) > i:

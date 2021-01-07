@@ -22,22 +22,22 @@ def processing_latency(clouds: List[Cloud], fogs: List[Fog], tasks: List[Task], 
         cloud = clouds[cloud_id]
         for time_slot, task_id in enumerate(cloud_node):
             task = tasks[task_id]
-            cloud_latency += cloud.lam_bda * task.q_r
+            cloud_latency += cloud.lamda * task.q_r
             for i in range(time_slot - 1):
                 task = tasks[i]
                 factor = 1 / 2 ** (time_slot - i + 1)
-                cloud_latency += factor * cloud.lam_bda * task.q_s
+                cloud_latency += factor * cloud.lamda * task.q_s
 
     for fog_id, fog_node in enumerate(schedule.fog_schedule):
         fog = fogs[fog_id]
         for time_slot, task_id in enumerate(fog_node):
             task = tasks[task_id]
-            fog_latency += fog.lam_bda * task.p_r
+            fog_latency += fog.lamda * task.p_r
             start_time_slot = max(0, time_slot - fog.tau)
             for i in range(start_time_slot, time_slot - 1):
                 task = tasks[i]
                 factor = 1 / 2 ** (time_slot - i + 1)
-                fog_latency += factor * fog.lam_bda * task.p_s
+                fog_latency += factor * fog.lamda * task.p_s
 
     return cloud_latency + fog_latency
 

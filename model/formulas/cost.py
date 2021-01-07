@@ -50,7 +50,7 @@ def computation_cost(clouds: List[Cloud], fogs: List[Fog], tasks: List[Task], sc
     for time_slot in range(schedule.total_time):
         for fog_id, fog_node in enumerate(schedule.fog_schedule):
             fog = fogs[fog_id]
-            fog_cost += fog.idle_pi
+            fog_cost += fog.pi_idle
             if len(fog_node) > time_slot:
                 task_id = fog_node[time_slot]
                 task = tasks[task_id]
@@ -63,7 +63,7 @@ def computation_cost(clouds: List[Cloud], fogs: List[Fog], tasks: List[Task], sc
 
         for cloud_id, cloud_node in enumerate(schedule.cloud_schedule):
             cloud = clouds[cloud_id]
-            cloud_cost += cloud.idle_pi
+            cloud_cost += cloud.pi_idle
             if len(cloud_node) > time_slot:
                 task_id = cloud_node[time_slot]
                 task = tasks[task_id]
@@ -83,7 +83,7 @@ def storage_cost(clouds: List[Cloud], fogs: List[Fog], tasks: List[Task], schedu
     for time_slot in range(schedule.total_time):
         for cloud_id, cloud_node in enumerate(schedule.cloud_schedule):
             cloud = clouds[cloud_id]
-            cloud_cost += cloud.idle_omega
+            cloud_cost += cloud.omega_idle
             for i in range(time_slot):
                 if len(cloud_node) > i:
                     task = tasks[cloud_node[i]]
@@ -91,7 +91,7 @@ def storage_cost(clouds: List[Cloud], fogs: List[Fog], tasks: List[Task], schedu
 
         for fog_id, fog_node in enumerate(schedule.fog_schedule):
             fog = fogs[fog_id]
-            fog_cost += fog.idle_omega
+            fog_cost += fog.omega_idle
             start_time_slot = max(0, time_slot - fog.tau)
             for i in range(start_time_slot, time_slot):
                 if len(fog_node) > i:
