@@ -7,49 +7,37 @@
 #       Github:     https://github.com/thieu1995                                                        %
 # ------------------------------------------------------------------------------------------------------%
 
-import time
-import numpy as np
+from numpy import array
+from numpy.random import uniform
+from time import time
+from copy import deepcopy
 from config import Config
-from model import Fitness
-from utils import get_min_value, matrix_to_schedule
-from utils import create_solution
+from model.fitness import Fitness
+from utils.schedule_util import matrix_to_schedule
 
 
 class Root:
-    def __init__(self, pop_size=10, epoch=2, func_eval=100000, time_bound=None, domain_range=None):
+    ID_SOL = 0
+    ID_FIT = 1
+
+    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, time_bound=None, domain_range=None):
+        self.problem = problem
         self.pop_size = pop_size
         self.epoch = epoch
         self.func_eval = func_eval
         self.time_bound = time_bound
         self.domain_range = domain_range
+        self.Fit = Fitness(problem)
 
     def create_solution(self):
-        sol, fit = create_solution(self.domain_range)
-        return [sol, fit]
-
-    def cal_rank(self, pop):
-        '''
-        Calculate ranking for element in current population
-        '''
-        fit = []
-        for i in range(len(pop)):
-            fit.append(pop[i][1])
-        arg_rank = np.array(fit).argsort()
-        rank = [i / sum(range(1, len(pop) + 1)) for i in range(1, len(pop) + 1)]
-        return rank
-
-    def wheel_select(self, pop, prob):
-        '''
-        Select dad and mom from current population by rank
-        '''
-        r = np.random.random()
-        sum = prob[0]
-        for i in range(1, len(pop) + 1):
-            if sum > r:
-                return i - 1
-            else:
-                sum += prob[i]
-        return sum
+        while True:
+            matrix_cloud = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem.tasks), len(self.problem.clouds)))
+            matrix_fog = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem.tasks), len(self.problem.fogs)))
+            schedule = matrix_to_schedule(self.problem, matrix_cloud, matrix_fog)
+            if schedule.is_valid():
+                fitness = self.Fit.fitness(schedule)
+                break
+        return [[matrix_cloud, matrix_fog], fitness]        # [solution, fit]
 
     def early_stopping(self, array, patience=5):
         if patience <= len(array) - 1:
@@ -64,61 +52,57 @@ class Root:
             return True
         raise ValueError
 
-    def evolve(self):
-        print('|-> Start evolve with genertic algorithms')
+    def envolve(self, pop):
+        pass
 
-        pop = [self.create_solution() for _ in range(self.population_size)]
-
+    def train(self):
+        print(f'Start training with: {self.__class__} algorithm')
+        pop = [self.create_solution() for _ in range(self.pop_size)]
         if Config.METRICS == 'trade-off':
-            gbest = max(pop, key=lambda x: x[1])
+            g_best = max(pop, key=lambda x: x[self.ID_FIT])
         else:
-            gbest = min(pop, key=lambda x: x[1])
-
-        g_best_arr = [gbest[1]]
-        if Config.MODE == 'epochs':
-            for iter in range(self.epochs):
-                print('Iteration {}'.format(iter + 1))
-                start_time = time.time()
-                pop = self.select(pop)
-                pop = self.mutate(pop)
+            g_best = min(pop, key=lambda x: x[self.ID_FIT])
+        g_best_list = [g_best[self.ID_FIT]]
+        if Config.MODE == 'epoch':
+            print(f'Training algorithm by: epoch (mode) with: {self.epoch} epochs')
+            for epoch in range(self.epoch):
+                time_epoch_start = time()
+                pop = self.envolve(pop)
                 if Config.METRICS == 'trade-off':
-                    best_fit = max(pop, key=lambda x: x[1])
-                    if best_fit[1] > g_best_arr[-1]:
-                        gbest = best_fit
+                    current_best = max(pop, key=lambda x: x[self.ID_FIT])
+                    if current_best[self.ID_FIT] > g_best_list[-1]:
+                        g_best = deepcopy(current_best)
                 else:
-                    best_fit = min(pop, key=lambda x: x[1])
-                    if best_fit[1] < g_best_arr[-1]:
-                        gbest = best_fit
-                g_best_arr.append(gbest[1])
-                time_run = time.time() - start_time
-                print(f'best current fit {best_fit[1]:.8f}, '
-                      f'best fit so far {gbest[1]:.8f}, '
-                      f'iter {iter} with time: {time_run:.2f}')
-            return gbest[0][0], gbest[0][1], np.array(g_best_arr)
-        else:
-            print('==== oprimize by time ===')
-            print('time scheduling: ', self.time_scheduling)
-            start_time_run = time.time()
-            for iter in range(self.epochs):
-                print('Iteration {}'.format(iter + 1))
-                start_time_epoch = time.time()
-                pop = self.select(pop)
-                pop = self.mutate(pop)
+                    current_best = min(pop, key=lambda x: x[1])
+                    if current_best[self.ID_FIT] < g_best_list[-1]:
+                        g_best = deepcopy(current_best)
+                g_best_list.append(g_best[self.ID_FIT])
+                time_epoch_end = time() - time_epoch_start
+                print(f'Current best fit {current_best[self.ID_FIT]:.4f}, '
+                      f'Global best fit {g_best[self.ID_FIT]:.4f}, '
+                      f'Epoch {epoch + 1} with time: {time_epoch_end:.2f}')
+            return g_best[0], g_best[1], array(g_best_list)
+        elif Config.MODE == 'time':
+            print(f'Training algorithm by: time (mode) with: {self.time_bound} seconds')
+            time_bound_start = time()
+            for epoch in range(self.epoch):
+                time_epoch_start = time()
+                pop = self.envolve(pop)
                 if Config.METRICS == 'trade-off':
-                    best_fit = max(pop, key=lambda x: x[1])
-                    if best_fit[1] > g_best_arr[-1]:
-                        gbest = best_fit
+                    current_best = max(pop, key=lambda x: x[self.ID_FIT])
+                    if current_best[self.ID_FIT] > g_best_list[-1]:
+                        g_best = deepcopy(current_best)
                 else:
-                    best_fit = min(pop, key=lambda x: x[1])
-                    if best_fit[1] < g_best_arr[-1]:
-                        gbest = best_fit
-                g_best_arr.append(gbest[1])
-                time_run = time.time() - start_time_epoch
-                print(f'best current fit {best_fit[1]:.8f}, '
-                      f'best fit so far {gbest[1]:.8f}, '
-                      f'iter {iter} with time: {time_run:.2f}')
-                if time.time() - start_time_run >= self.time_scheduling:
-                    print('=== over time training ===')
+                    current_best = min(pop, key=lambda x: x[1])
+                    if current_best[self.ID_FIT] < g_best_list[-1]:
+                        g_best = deepcopy(current_best)
+                g_best_list.append(g_best[self.ID_FIT])
+                time_epoch_end = time() - time_epoch_start
+                print(f'Current best fit {current_best[self.ID_FIT]:.4f}, '
+                      f'Global best fit {g_best[self.ID_FIT]:.4f}, '
+                      f'Epoch {epoch + 1} with time: {time_epoch_end:.2f}')
+                if time() - time_bound_start >= self.time_bound:
+                    print('====== Over time for training ======')
                     break
-            return gbest[0][0], gbest[0][1], np.array(g_best_arr)
+            return g_best[0], g_best[1], array(g_best_list)
 

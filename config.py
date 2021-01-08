@@ -28,6 +28,8 @@ class DefaultData:
     SERVICE_LATENCY_MAX = [10, 100]                 # 10 seconds to 100 seconds
     TASK_LIST = list(range(100, 1001, 100))
 
+    TASK_LABEL_IMPORTANT = 1
+    TASK_DEFAULT_SL_MAX = 10
 
     NUM_TASKS = 20
     NUM_FOGS = 10
@@ -37,8 +39,9 @@ class DefaultData:
     LOC_LONG_BOUND = [-100, 100]
     LOC_LAT_BOUND = [-100, 100]
 
-    RATE_FOG_CLOUD_LINKED = 0.85
-    RATE_FOG_PEER_LINKED = 0.2
+    RATE_FOG_CLOUD_LINKED = 0.8
+    RATE_FOG_PEER_LINKED = 0.4
+    RATE_CLOUD_PEER_LINKED = 0.2
 
 
 
