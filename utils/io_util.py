@@ -29,7 +29,6 @@ def dump_tasks(tasks: List[Task]) -> None:
         json.dump(tasks, outfile, indent=4)
 
 
-
 def dump_nodes(clouds: List[Cloud], fogs: List[Fog], peers: List[Node]) -> None:
     data = {
         'fogs': [f.to_dict() for f in fogs],
@@ -56,13 +55,15 @@ def load_tasks(filename: str) -> List[Task]:
         return tasks
 
 
-def load_cloudlets(filename: str) -> Tuple[List[Cloud], List[Fog]]:
+def load_cloudlets(filename: str) -> Tuple[List[Cloud], List[Fog], List[Node]]:
     clouds = []
     fogs = []
+    peers = []
     with open(filename, 'r', encoding='utf-8') as infile:
         data = json.load(infile)
         cloud_data = data['clouds']
         fog_data = data['fogs']
+        peer_data = data['peers']
         for row in cloud_data:
             cloud = Cloud()
             for key, value in row.items():
@@ -73,4 +74,9 @@ def load_cloudlets(filename: str) -> Tuple[List[Cloud], List[Fog]]:
             for key, value in row.items():
                 setattr(fog, key, value)
             fogs.append(fog)
-        return clouds, fogs
+        for row in peer_data:
+            peer = Node()
+            for key, value in row.items():
+                setattr(peer, key, value)
+            peers.append(peer)
+        return clouds, fogs, peers

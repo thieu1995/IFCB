@@ -10,10 +10,7 @@
 
 from numpy.random import uniform, normal
 from numpy import array
-
 from config import *
-from utils import matrix_to_schedule
-from model import Fitness
 
 
 def get_min_value(element_value_range):
@@ -62,24 +59,4 @@ def get_trade_off_case():
 
 
 print(get_trade_off_case())
-
-def compute_fitness():
-    fit_obj = Fitness(clouds, fogs, tasks)
-    if Config.METRICS == 'trade-off':
-        self.min_value_information = get_min_value(self.element_value_range)
-        self.fitness_manager.set_min_power(self.min_value_information[str(len(self.tasks))]['power'])
-        self.fitness_manager.set_min_latency(self.min_value_information[str(len(self.tasks))]['latency'])
-        self.fitness_manager.set_min_cost(self.min_value_information[str(len(self.tasks))]['cost'])
-
-def create_solution(domain_range):
-    is_not_valid = True
-    while is_not_valid:
-        cloud_matrix = uniform(domain_range[0], domain_range[1], (len(Config.TASKS), len(Config.CLOUDS)))
-        fog_matrix = uniform(domain_range[0], domain_range[1], (len(Config.TASKS), len(Config.CLOUDS)))
-        _schedule = matrix_to_schedule(cloud_matrix, fog_matrix, fog_cloud_paths)
-        if _schedule.is_valid():
-            is_not_valid = False
-        _fitness = compute_fitness(_schedule)
-    return [cloud_matrix, fog_matrix], _fitness
-
 
