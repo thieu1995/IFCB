@@ -158,5 +158,14 @@ if __name__ == '__main__':
         dist_list = [item["peer_id"] for item in dist_list]
         fog.linked_peers = dist_list[:int(ceil(DefaultData.RATE_FOG_PEER_LINKED * number_peers))]
 
+    ## Connecting cloud and blockchain
+    for id_cloud, cloud in enumerate(clouds):
+        dist_list = []
+        for id_peer, peer in enumerate(peers):
+            dist_temp = peer.dist(cloud)
+            dist_list.append({"peer_id": peer.id, "dist": dist_temp})
+        dist_list = sorted(dist_list, key=lambda item: item["dist"])
+        dist_list = [item["peer_id"] for item in dist_list]
+        cloud.linked_peers = dist_list[:int(ceil(DefaultData.RATE_CLOUD_PEER_LINKED * number_peers))]
     ## Saving fog/cloud nodes and blockchain peers
     dump_nodes(clouds, fogs, peers)
