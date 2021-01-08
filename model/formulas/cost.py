@@ -16,19 +16,19 @@ def data_forwarding_cost(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: S
     peer_cost = 0
 
     tasks_fogs_schedule = {}
-    for fog_id, list_task_id in enumerate(schedule.schedule_fogs_tasks):
+    for fog_id, list_task_id in schedule.schedule_fogs_tasks.items():
         for task_id in list_task_id:
             tasks_fogs_schedule[task_id] = fog_id
 
     for time_slot in range(schedule.total_time):
-        for fog_id, list_task_id in enumerate(schedule.schedule_fogs_tasks):
+        for fog_id, list_task_id in schedule.schedule_fogs_tasks.items():
             fog = fogs[fog_id]
             fog_cost += fog.sigma_device_idle + fog.sigma_idle
             if len(list_task_id) > time_slot:
                 task = tasks[list_task_id[time_slot]]
                 fog_cost += (fog.eg_sigma + fog.fi_sigma) * (task.r_p + task.r_s)
 
-        for cloud_id, list_task_id in enumerate(schedule.schedule_clouds_tasks):
+        for cloud_id, list_task_id in schedule.schedule_clouds_tasks.items():
             if len(list_task_id) <= time_slot:
                 continue
             task_id = list_task_id[time_slot]
@@ -39,7 +39,7 @@ def data_forwarding_cost(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: S
             cloud_cost += (fog.sigma_device + fog.sigma + cloud.sigma) * (task.q_p + task.q_s)
 
     list_task_handlers = schedule.get_list_task_handlers()
-    for peer_id, list_task_id in enumerate(schedule.schedule_peers_tasks):
+    for peer_id, list_task_id in schedule.schedule_peers_tasks.item():
         for task_id in list_task_id:
             fog_id, cloud_id = list_task_handlers[task_id]
             fog = fogs[fog_id]
@@ -59,7 +59,7 @@ def computation_cost(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Sched
     fog_cost = 0
 
     for time_slot in range(schedule.total_time):
-        for fog_id, list_task_id in enumerate(schedule.schedule_fogs_tasks):
+        for fog_id, list_task_id in schedule.schedule_fogs_tasks.items():
             fog = fogs[fog_id]
             fog_cost += fog.pi_idle
             if len(list_task_id) > time_slot:
@@ -71,7 +71,7 @@ def computation_cost(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Sched
                     factor = 1 / 2 ** (time_slot - i + 1)
                     fog_cost += factor * fog.pi * task.r_s
 
-        for cloud_id, list_task_id in enumerate(schedule.schedule_clouds_tasks):
+        for cloud_id, list_task_id in schedule.schedule_clouds_tasks.items():
             cloud = clouds[cloud_id]
             cloud_cost += cloud.pi_idle
             if len(list_task_id) > time_slot:
@@ -92,7 +92,7 @@ def storage_cost(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Schedule)
     peer_cost = 0
 
     for time_slot in range(schedule.total_time):
-        for cloud_id, list_task_id in enumerate(schedule.schedule_clouds_tasks):
+        for cloud_id, list_task_id in schedule.schedule_clouds_tasks.items():
             cloud = clouds[cloud_id]
             cloud_cost += cloud.omega_idle
             for i in range(time_slot):
@@ -100,7 +100,7 @@ def storage_cost(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Schedule)
                     task = tasks[list_task_id[i]]
                     cloud_cost += cloud.omega * task.q_s
 
-        for fog_id, list_task_id in enumerate(schedule.schedule_fogs_tasks):
+        for fog_id, list_task_id in schedule.schedule_fogs_tasks.items():
             fog = fogs[fog_id]
             fog_cost += fog.omega_idle
             start_time_slot = max(0, time_slot - fog.tau)
@@ -109,7 +109,7 @@ def storage_cost(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Schedule)
                     task = tasks[list_task_id[i]]
                     fog_cost += fog.omega * task.r_s
 
-    for peer_id, list_task_id in enumerate(schedule.schedule_peers_tasks):
+    for peer_id, list_task_id in schedule.schedule_peers_tasks.items():
         for task_id in list_task_id:
             peer = peers[peer_id]
             task = tasks[task_id]

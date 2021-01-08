@@ -16,23 +16,23 @@ def data_forwarding_power(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: 
     peer_power = 0
 
     tasks_fogs_schedule = {}
-    for fog_id, list_task_id in enumerate(schedule.schedule_fogs_tasks):
+    for fog_id, list_task_id in schedule.schedule_fogs_tasks.items():
         for task_id in list_task_id:
             tasks_fogs_schedule[task_id] = fog_id
     tasks_clouds_schedule = {}
-    for cloud_id, list_task_id in enumerate(schedule.schedule_clouds_tasks):
+    for cloud_id, list_task_id in schedule.schedule_clouds_tasks.items():
         for task_id in list_task_id:
             tasks_clouds_schedule[task_id] = cloud_id
 
     for time_slot in range(schedule.total_time):
-        for fog_id, list_task_id in enumerate(schedule.schedule_fogs_tasks):
+        for fog_id, list_task_id in schedule.schedule_fogs_tasks.items():
             fog = fogs[fog_id]
             fog_power += fog.alpha_device_idle + fog.alpha_idle
             if len(list_task_id) > time_slot:
                 task = tasks[list_task_id[time_slot]]
                 fog_power += (fog.alpha_device + fog.alpha) * (task.r_p + task.r_s)
 
-        for cloud_id, list_task_id in enumerate(schedule.schedule_clouds_tasks):
+        for cloud_id, list_task_id in schedule.schedule_clouds_tasks.items():
             if len(list_task_id) <= time_slot:
                 continue
             task_id = list_task_id[time_slot]
@@ -43,7 +43,7 @@ def data_forwarding_power(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: 
             cloud_power += (fog.alpha_device + fog.alpha + cloud.alpha) * (task.q_p + task.q_s)
 
     list_task_handlers = schedule.get_list_task_handlers()
-    for peer_id, list_task_id in enumerate(schedule.schedule_peers_tasks):
+    for peer_id, list_task_id in schedule.schedule_peers_tasks.items():
         for task_id in list_task_id:
             fog_id, cloud_id = list_task_handlers[task_id]
             fog = fogs[fog_id]
@@ -62,7 +62,7 @@ def computation_power(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Sche
     cloud_power = 0
 
     for time_slot in range(schedule.total_time):
-        for fog_id, list_task_id in enumerate(schedule.schedule_fogs_tasks):
+        for fog_id, list_task_id in schedule.schedule_fogs_tasks.items():
             fog = fogs[fog_id]
             fog_power += fog.beta_idle
             if len(list_task_id) > time_slot:
@@ -74,7 +74,7 @@ def computation_power(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Sche
                     factor = 1 / 2 ** (time_slot - i + 1)
                     fog_power += factor * fog.beta * task.r_s
 
-        for cloud_id, list_task_id in enumerate(schedule.schedule_clouds_tasks):
+        for cloud_id, list_task_id in schedule.schedule_clouds_tasks.items():
             cloud = clouds[cloud_id]
             cloud_power += cloud.beta_idle
             if len(list_task_id) > time_slot:
@@ -94,7 +94,7 @@ def storage_power(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Schedule
     peer_power = 0
 
     for time_slot in range(schedule.total_time):
-        for cloud_id, list_task_id in enumerate(schedule.schedule_clouds_tasks):
+        for cloud_id, list_task_id in schedule.schedule_clouds_tasks.items():
             cloud = clouds[cloud_id]
             cloud_power += cloud.gamma_idle
             for i in range(time_slot):
@@ -102,7 +102,7 @@ def storage_power(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Schedule
                     task = tasks[list_task_id[i]]
                     cloud_power += cloud.gamma * task.r_s
 
-        for fog_id, list_task_id in enumerate(schedule.schedule_fogs_tasks):
+        for fog_id, list_task_id in schedule.schedule_fogs_tasks.items():
             fog = fogs[fog_id]
             fog_power += fog.gamma_idle
             start_time_slot = max(0, time_slot - fog.tau)
@@ -111,7 +111,7 @@ def storage_power(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Schedule
                     task = tasks[list_task_id[i]]
                     fog_power += fog.gamma * task.q_s
 
-    for peer_id, list_task_id in enumerate(schedule.schedule_peers_tasks):
+    for peer_id, list_task_id in schedule.schedule_peers_tasks.items():
         for task_id in list_task_id:
             peer = peers[peer_id]
             task = tasks[task_id]

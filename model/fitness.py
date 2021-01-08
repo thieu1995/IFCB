@@ -8,7 +8,6 @@
 # ------------------------------------------------------------------------------------------------------%
 
 from config import *
-from . import formulas
 from .schedule import Schedule
 from model.formulas import power, latency, cost
 
@@ -52,10 +51,10 @@ class Fitness:
         assert self.beta_trade_off >= 0
         assert self.alpha_trade_off + self.beta_trade_off <= 1.0
 
-    def fitness(self, schedule: Schedule) -> float:
-        power = self.calc_power_consumption(schedule)
-        latency = self.calc_latency(schedule)
-        cost = self.calc_cost(schedule)
+    def fitness(self, solution: Schedule) -> float:
+        power = self.calc_power_consumption(solution)
+        latency = self.calc_latency(solution)
+        cost = self.calc_cost(solution)
 
         # assert self._min_power <= power
         # assert self._min_latency <= latency

@@ -10,6 +10,7 @@
 from itertools import chain
 from copy import deepcopy
 from numpy import ndarray
+from numpy.random import uniform
 from typing import List
 
 from model import formulas
@@ -38,54 +39,39 @@ class Schedule:
         self.n_peers = len(self.peers)
         self.n_tasks = len(self.tasks)
 
-        self.schedule_clouds_tasks = [
-            # {
-            #     "cloud_id": 1,
-            #     "list_task_id": [1, 2, 3, 4],
-            # },
-            # {
-            #     "cloud_id": 2,
-            #     "list_task_id": [5, 7],
-            # }
-        ]
-        self.schedule_fogs_tasks = [
-            # {
-            #     "fog_id": 1,
-            #     "list_task_id": [1, 2, 3, 4],
-            # },
-            # {
-            #     "fog_id": 2,
-            #     "list_task_id": [5, 7],
-            # }
-        ]
-        self.schedule_peers_tasks = [
-            # {
-            #     "peer_id": 1,
-            #     "list_task_id": [1, 2, 3, 4],
-            # },
-            # {
-            #     "peer_id": 2,
-            #     "list_task_id": [5, 7],
-            # }
-        ]
+        self.schedule_clouds_tasks = {} # key: cloud_id, val: list_task_id []
+        self.schedule_fogs_tasks = {}
+        self.schedule_peers_tasks = {}
+
+        # [
+        #     {
+        #         "cloud_id": 1,
+        #         "list_task_id": [1, 2, 3, 4],
+        #     },
+        #     {
+        #         "cloud_id": 2,
+        #         "list_task_id": [5, 7],
+        #     }
+        # ]
+
 
     def get_list_task_handlers(self):
         task_handlers = {
             # "task_id": ["fog_id", "cloud_id"],
             # "2": [3, 4],
         }
-        for obj in self.schedule_fogs_tasks:
-            for task_id in obj["list_task_id"]:
+        for fog_id, list_task_id in self.schedule_fogs_tasks.items():
+            for task_id in list_task_id:
                 if task_id not in task_handlers.keys():
-                    task_handlers[task_id] = [obj["fog_id"]]
+                    task_handlers[task_id] = [fog_id]
                 else:
-                    task_handlers[task_id].append(obj["fog_id"])
-        for obj in self.schedule_clouds_tasks:
-            for task_id in obj["list_task_id"]:
+                    task_handlers[task_id].append(fog_id)
+        for cloud_id, list_task_id in self.schedule_clouds_tasks.items():
+            for task_id in list_task_id:
                 if task_id not in task_handlers.keys():
-                    task_handlers[task_id] = [obj["cloud_id"]]
+                    task_handlers[task_id] = [cloud_id]
                 else:
-                    task_handlers[task_id].append(obj["cloud_id"])
+                    task_handlers[task_id].append(cloud_id)
         return task_handlers
 
     def is_valid(self) -> bool:
@@ -95,12 +81,12 @@ class Schedule:
         """
 
         ## 1. Total tasks in fogs = total tasks in clouds = total tasks
-        tasks_temp = [obj["list_task_id"] for obj in self.schedule_clouds_tasks]
+        tasks_temp = [task_id for task_id in self.schedule_clouds_tasks.values()]
         tasks = list(chain(*tasks_temp))
         if len(set(tasks)) != self.n_tasks:
             return False
 
-        tasks_temp = [obj["list_task_id"] for obj in self.schedule_fogs_tasks]
+        tasks_temp = [task_id for task_id in self.schedule_fogs_tasks.values()]
         tasks = list(chain(*tasks_temp))
         if len(set(tasks)) != self.n_tasks:
             return False
@@ -129,6 +115,6 @@ class Schedule:
 
     @property
     def total_time(self) -> int:
-        cloud_time = max([len(item["list_task_id"]) for item in self.schedule_clouds_tasks])
-        fog_time = max([len(item["list_task_id"]) for item in self.schedule_fogs_tasks])
+        cloud_time = max([len(val) for val in self.schedule_clouds_tasks.values()])
+        fog_time = max([len(val) for val in self.schedule_fogs_tasks.values()])
         return max(cloud_time, fog_time)

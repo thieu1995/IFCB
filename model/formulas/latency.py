@@ -15,18 +15,18 @@ def transmission_latency(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: S
     fog_latency = 0
 
     tasks_fogs_schedule = {}
-    for fog_id, list_task_id in enumerate(schedule.schedule_fogs_tasks):
+    for fog_id, list_task_id in schedule.schedule_fogs_tasks.items():
         for task_id in list_task_id:
             tasks_fogs_schedule[task_id] = fog_id
 
-    for cloud_id, list_task_id in enumerate(schedule.schedule_clouds_tasks):
+    for cloud_id, list_task_id in schedule.schedule_clouds_tasks.items():
         for task_id in range(list_task_id):
             fog = fogs[tasks_fogs_schedule[task_id]]
             task = tasks[task_id]
             cloud = clouds[cloud_id]
             cloud_latency += (fog.eta + cloud.eta) * (task.q_p + task.q_s)
 
-    for fog_id, list_task_id in enumerate(schedule.schedule_fogs_tasks):
+    for fog_id, list_task_id in schedule.schedule_fogs_tasks.items():
         for task_id in range(list_task_id):
             fog = fogs[fog_id]
             task = tasks[task_id]
@@ -40,7 +40,7 @@ def processing_latency(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Sch
     cloud_latency = 0
     fog_latency = 0
 
-    for cloud_id, list_task_id in enumerate(schedule.schedule_clouds_tasks):
+    for cloud_id, list_task_id in schedule.schedule_clouds_tasks.items():
         cloud = clouds[cloud_id]
         for time_slot, task_id in enumerate(list_task_id):
             task = tasks[task_id]
@@ -50,7 +50,7 @@ def processing_latency(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Sch
                 factor = 1 / 2 ** (time_slot - i + 1)
                 cloud_latency += factor * cloud.lamda * task.q_s
 
-    for fog_id, list_task_id in enumerate(schedule.schedule_fogs_tasks):
+    for fog_id, list_task_id in schedule.schedule_fogs_tasks.items():
         fog = fogs[fog_id]
         for time_slot, task_id in enumerate(list_task_id):
             task = tasks[task_id]

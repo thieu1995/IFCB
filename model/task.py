@@ -9,11 +9,13 @@
 
 from utils.dict_util import ToDict
 from uuid import uuid4
+from config import DefaultData
 
 
 class Task(ToDict):
 
-    def __init__(self, r_p, r_s, q_p, q_s, label=0, sl_max=10):
+    def __init__(self, r_p=0, r_s=0, q_p=0, q_s=0,
+                 label=DefaultData.TASK_LABEL_IMPORTANT, sl_max=DefaultData.TASK_DEFAULT_SL_MAX):
         self.r_p = r_p
         self.r_s = r_s
         self.q_p = q_p

@@ -8,12 +8,11 @@
 # ------------------------------------------------------------------------------------------------------%
 
 from .base import Base
-from numpy import array
 
 
 class Fog(Base):
 
-    def __init__(self, name:str, location:array):
+    def __init__(self, name=None, location=None):
         super().__init__(name, location)
 
         self.alpha_idle = 0     # power consumption - data forwarding - idle

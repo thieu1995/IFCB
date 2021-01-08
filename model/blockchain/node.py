@@ -7,13 +7,12 @@
 #       Github:     https://github.com/thieu1995                                                        %
 # ------------------------------------------------------------------------------------------------------%
 
-from numpy import array
 from model.base import Base
 
 
 class Node(Base):
 
-    def __init__(self, name: str, location: array):
+    def __init__(self, name=None, location=None):
         super().__init__(name, location)
 
         self.alpha_sm = 0       # power consumption - data forwarding - standby mode
