@@ -7,24 +7,34 @@
 #       Github:     https://github.com/thieu1995                                                        %
 # ------------------------------------------------------------------------------------------------------%
 
-from typing import List
-from model import Cloud, Fog, Task, formulas
 from config import *
+from . import formulas
 from .schedule import Schedule
+from model.formulas import power, latency, cost
 
 
 class Fitness:
 
-    def __init__(self, clouds: List[Cloud], fogs: List[Fog], tasks: List[Task]):
-        self.clouds = clouds
-        self.fogs = fogs
-        self.tasks = tasks
+    def __init__(self, problem):
+        self.clouds = problem["clouds"]
+        self.fogs = problem["fogs"]
+        self.peers = problem["peers"]
+        self.tasks = problem["task"]
+        self.list_to_dict(self.clouds, self.fogs, self.peers, self.tasks)
 
         self._min_power = 0
         self._min_latency = 0
         self._min_cost = 0
         self.alpha_trade_off = 1 / 3
         self.beta_trade_off = 1 / 3
+
+    def list_to_dict(self, *attributes):
+        for idx, attr in enumerate(attributes):
+            objs = getattr(self, attr)
+            obj_list = {}
+            for obj in objs:
+                obj_list[obj.id] = obj
+            setattr(self, attr, obj_list)
 
     def set_min_power(self, value: float):
         self._min_power = value
@@ -42,7 +52,7 @@ class Fitness:
         assert self.beta_trade_off >= 0
         assert self.alpha_trade_off + self.beta_trade_off <= 1.0
 
-    def calc(self, schedule: Schedule) -> float:
+    def fitness(self, schedule: Schedule) -> float:
         power = self.calc_power_consumption(schedule)
         latency = self.calc_latency(schedule)
         cost = self.calc_cost(schedule)
@@ -69,19 +79,19 @@ class Fitness:
             print(f'[ERROR] Metrics {Config.METRICS} is not supported in class FitnessManager')
 
     def calc_power_consumption(self, schedule: Schedule) -> float:
-        power = formulas.data_forwarding_power(self.clouds, self.fogs, self.tasks, schedule)
-        power += formulas.computation_power(self.clouds, self.fogs, self.tasks, schedule)
-        power += formulas.storage_power(self.clouds, self.fogs, self.tasks, schedule)
-        return power / 3600
+        po = power.data_forwarding_power(self.clouds, self.fogs, self.peers, self.tasks, schedule)
+        po += power.computation_power(self.clouds, self.fogs, self.peers, self.tasks, schedule)
+        po += power.storage_power(self.clouds, self.fogs, self.peers, self.tasks, schedule)
+        return po / 3600
 
     def calc_latency(self, schedule: Schedule) -> float:
-        latency = formulas.processing_latency(self.clouds, self.fogs, self.tasks, schedule)
-        latency += formulas.processing_latency(self.clouds, self.fogs, self.tasks, schedule)
-        return latency
+        la = latency.processing_latency(self.clouds, self.fogs, self.peers, self.tasks, schedule)
+        la += latency.processing_latency(self.clouds, self.fogs, self.peers, self.tasks, schedule)
+        return la
 
     def calc_cost(self, schedule: Schedule) -> float:
-        cost = formulas.data_forwarding_cost(self.clouds, self.fogs, self.tasks, schedule)
-        cost += formulas.computation_cost(self.clouds, self.fogs, self.tasks, schedule)
-        cost += formulas.storage_cost(self.clouds, self.fogs, self.tasks, schedule)
-        return cost
+        co = cost.data_forwarding_cost(self.clouds, self.fogs, self.peers, self.tasks, schedule)
+        co += cost.computation_cost(self.clouds, self.fogs, self.peers, self.tasks, schedule)
+        co += cost.storage_cost(self.clouds, self.fogs, self.peers, self.tasks, schedule)
+        return co
 

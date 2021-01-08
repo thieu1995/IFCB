@@ -13,8 +13,8 @@ from model.base import Base
 
 class Node(Base):
 
-    def __init__(self, id: int, name: str, location: array):
-        super().__init__(id, name, location)
+    def __init__(self, name: str, location: array):
+        super().__init__(name, location)
 
         self.alpha_sm = 0       # power consumption - data forwarding - standby mode
         self.gamma_sm = 0       # power consumption - storage - standby mode

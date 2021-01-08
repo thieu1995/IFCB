@@ -13,8 +13,8 @@ from model.base import Base
 
 class Cloud(Base):
 
-    def __init__(self, id: int, name: str, location: array):
-        super().__init__(id, name, location)
+    def __init__(self, name: str, location: array):
+        super().__init__(name, location)
 
         self.alpha_idle = 0     # power consumption - data forwarding - idle
         self.beta_idle = 0      # power consumption - computation - idle

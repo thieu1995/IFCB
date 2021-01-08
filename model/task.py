@@ -8,6 +8,7 @@
 # ------------------------------------------------------------------------------------------------------%
 
 from utils.dict_util import ToDict
+from uuid import uuid4
 
 
 class Task(ToDict):
@@ -19,14 +20,23 @@ class Task(ToDict):
         self.q_s = q_s
         self.label = label      # 0: not saving to blockchain (not important), otherwise: save the blockchain
         self.sl_max = sl_max
+        self.id = uuid4().hex
+
+    # def __repr__(self):
+    #     return str({
+    #         'Rp': self.r_p,
+    #         'Rs': self.r_s,
+    #         'Qp': self.q_p,
+    #         'Qs': self.q_s,
+    #         'Label': self.label,
+    #         'SL_MAX': self.sl_max
+    #     })
 
     def __repr__(self):
-        return str({
-            'Rp': self.r_p,
-            'Rs': self.r_s,
-            'Qp': self.q_p,
-            'Qs': self.q_s,
-            'Label': self.label,
-            'SL_MAX': self.sl_max
-        })
+        return str(self.to_dict())
 
+    def __eq__(self, other):
+        return self.id == other.id and self.sl_max == other.sl_max
+
+    def __hash__(self):
+        return hash(('id', self.id, 'sl_max', self.sl_max))

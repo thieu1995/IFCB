@@ -11,14 +11,15 @@ from abc import ABC
 from utils.dict_util import ToDict
 from numpy import array, sqrt, sum
 from json import dumps
+from uuid import uuid4
 
 
 class Base(ABC, ToDict):
 
-    def __init__(self, id:int, name:str, location:array) -> None:
-        self.id = id
+    def __init__(self, name:str, location:array) -> None:
         self.name = name
         self.location = location
+        self.id = uuid4().hex
 
         self.alpha = 0      # power consumption - data forwarding
         self.beta = 0       # power consumption - computation

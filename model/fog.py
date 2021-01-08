@@ -13,8 +13,8 @@ from numpy import array
 
 class Fog(Base):
 
-    def __init__(self, id:int, name:str, location:array):
-        super().__init__(id, name, location)
+    def __init__(self, name:str, location:array):
+        super().__init__(name, location)
 
         self.alpha_idle = 0     # power consumption - data forwarding - idle
         self.beta_idle = 0      # power consumption - computation - idle
@@ -32,5 +32,5 @@ class Fog(Base):
 
         self.tau = 10_000  # time-to-live
 
-        self.linked_clouds = []
-        self.linked_peers = []
+        self.linked_clouds = []         # [cloud_id, ....]
+        self.linked_peers = []          # [peer_id, ....]
