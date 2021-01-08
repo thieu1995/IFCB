@@ -27,8 +27,8 @@ def create_task():
     return Task(r_p, r_s, q_p, q_s, label, sl_max)
 
 
-def create_cloud_node(id, name, location):
-    cloud = Cloud(id, name, location)
+def create_cloud_node(name, location):
+    cloud = Cloud(name, location)
 
     cloud.alpha = uniform(5e-7, 5e-5)     # power consumption - data forwarding
     cloud.beta = uniform(5e-9, 5e-7)      # power consumption - computation
@@ -52,8 +52,8 @@ def create_cloud_node(id, name, location):
     return cloud
 
 
-def create_fog_node(id, name, location):
-    fog = Fog(id, name, location)
+def create_fog_node(name, location):
+    fog = Fog(name, location)
 
     fog.alpha = uniform(5e-8, 5e-6)     # power consumption - data forwarding
     fog.beta = uniform(5e-7, 5e-4)      # power consumption - computation
@@ -84,8 +84,8 @@ def create_fog_node(id, name, location):
     return fog
 
 
-def create_blockchain_node(id, name, location):
-    node = Node(id, name, location)
+def create_blockchain_node(name, location):
+    node = Node(name, location)
 
     node.alpha = uniform(5e-10, 5e-9)       # power consumption - data forwarding
     node.gamma = uniform(5e-10, 5e-8)       # power consumption - storage
@@ -120,7 +120,7 @@ if __name__ == '__main__':
             "long": uniform(DefaultData.LOC_LONG_BOUND[0], DefaultData.LOC_LONG_BOUND[1]),
             "lat": uniform(DefaultData.LOC_LAT_BOUND[0], DefaultData.LOC_LAT_BOUND[1]),
         }
-        clouds.append(create_cloud_node(idx, name, location))
+        clouds.append(create_cloud_node(name, location))
 
     fogs = []
     for idx in range(number_fogs):
@@ -129,7 +129,7 @@ if __name__ == '__main__':
             "long": uniform(DefaultData.LOC_LONG_BOUND[0], DefaultData.LOC_LONG_BOUND[1]),
             "lat": uniform(DefaultData.LOC_LAT_BOUND[0], DefaultData.LOC_LAT_BOUND[1]),
         }
-        fogs.append(create_fog_node(idx, name, location))
+        fogs.append(create_fog_node(name, location))
 
     peers = []
     for idx in range(number_peers):
@@ -138,22 +138,24 @@ if __name__ == '__main__':
             "long": uniform(DefaultData.LOC_LONG_BOUND[0], DefaultData.LOC_LONG_BOUND[1]),
             "lat": uniform(DefaultData.LOC_LAT_BOUND[0], DefaultData.LOC_LAT_BOUND[1]),
         }
-        peers.append(create_blockchain_node(idx, name, location))
+        peers.append(create_blockchain_node(name, location))
 
     ## Connecting fog and cloud, fog and blockchain
     for id_fog, fog in enumerate(fogs):
         dist_list = []
         for id_cloud, cloud in enumerate(clouds):
             dist_temp = cloud.dist(fog)
-            dist_list.append([hash(cloud), dist_temp])
-        dist_list = sorted(dist_list, key=lambda item: item[1])
+            dist_list.append({"cloud_id": cloud.id, "dist": dist_temp})
+        dist_list = sorted(dist_list, key=lambda item: item["dist"])
+        dist_list = [item["cloud_id"] for item in dist_list]
         fog.linked_clouds = dist_list[:int(ceil(DefaultData.RATE_FOG_CLOUD_LINKED * number_clouds))]
 
         dist_list = []
         for id_peer, peer in enumerate(peers):
             dist_temp = peer.dist(fog)
-            dist_list.append([hash(peer), dist_temp])
-        dist_list = sorted(dist_list, key=lambda item: item[1])
+            dist_list.append({"peer_id": peer.id, "dist": dist_temp})
+        dist_list = sorted(dist_list, key=lambda item: item["dist"])
+        dist_list = [item["peer_id"] for item in dist_list]
         fog.linked_peers = dist_list[:int(ceil(DefaultData.RATE_FOG_PEER_LINKED * number_peers))]
 
     ## Saving fog/cloud nodes and blockchain peers
