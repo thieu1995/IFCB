@@ -96,7 +96,6 @@ def optimize_schedule(problem):
     num_pool = 1  # 16
     param_grid = {
         'number_tasks': [100],  # list(range(150, 201, 50))
-        'trade_off_case': [[0.2, 0.3, 0.5]],  # get_trade_off_case()
         'pop_size': [50],  # [100]
         'epoch': [10],  # [200]
         'func_eval': [100000],

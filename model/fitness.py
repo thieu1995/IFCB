@@ -60,7 +60,7 @@ class Fitness:
         elif Config.METRICS == 'cost':
             return cost
         elif Config.METRICS == "weighting":
-            w = array(Config.OBJ_DISTANCING_METRICS)
+            w = array(Config.OBJ_WEIGHTING_METRICS)
             v = array([power, latency, cost])
             return sum(w * v)
         elif Config.METRICS == "distancing":
