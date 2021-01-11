@@ -7,9 +7,7 @@
 #       Github:     https://github.com/thieu1995                                                        %
 # ------------------------------------------------------------------------------------------------------%
 
-from numpy import ndarray, argmin, array
-from numpy.random import uniform
-
+from numpy import ndarray, argmin
 from model.schedule import Schedule
 from config import DefaultData
 

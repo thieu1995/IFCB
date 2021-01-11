@@ -7,7 +7,7 @@
 #       Github:     https://github.com/thieu1995                                                        %
 # ------------------------------------------------------------------------------------------------------%
 
-from numpy import array
+from numpy import array, ptp
 from numpy.random import uniform
 from time import time
 from copy import deepcopy
@@ -52,7 +52,19 @@ class Root:
             return True
         raise ValueError
 
-    def envolve(self, pop):
+    def get_index_roulette_wheel_selection(self, list_fitness: list):
+        """ It can handle negative also. Make sure your list fitness is 1D-numpy array"""
+        list_fitness = array(list_fitness)
+        scaled_fitness = (list_fitness - min(list_fitness)) / ptp(list_fitness)
+        minimized_fitness = 1.0 - scaled_fitness
+        total_sum = sum(minimized_fitness)
+        r = uniform(low=0, high=total_sum)
+        for idx, f in enumerate(minimized_fitness):
+            r = r + f
+            if r > total_sum:
+                return idx
+
+    def evolve(self, pop):
         pass
 
     def train(self):
@@ -67,7 +79,7 @@ class Root:
             print(f'Training algorithm by: epoch (mode) with: {self.epoch} epochs')
             for epoch in range(self.epoch):
                 time_epoch_start = time()
-                pop = self.envolve(pop)
+                pop = self.evolve(pop)
                 if Config.METRICS == 'trade-off':
                     current_best = max(pop, key=lambda x: x[self.ID_FIT])
                     if current_best[self.ID_FIT] > g_best_list[-1]:
@@ -87,7 +99,7 @@ class Root:
             time_bound_start = time()
             for epoch in range(self.epoch):
                 time_epoch_start = time()
-                pop = self.envolve(pop)
+                pop = self.evolve(pop)
                 if Config.METRICS == 'trade-off':
                     current_best = max(pop, key=lambda x: x[self.ID_FIT])
                     if current_best[self.ID_FIT] > g_best_list[-1]:

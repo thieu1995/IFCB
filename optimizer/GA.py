@@ -9,8 +9,8 @@
 
 from config import Config
 from optimizer.root import Root
-from numpy import array
-from numpy.random import uniform, choice, random
+from numpy.random import uniform, random
+from utils.schedule_util import matrix_to_schedule
 
 
 class GAEngine(Root):
@@ -20,93 +20,59 @@ class GAEngine(Root):
         self.p_c = p_c
         self.p_m = p_m
 
-    def cal_rank(self, pop):
-        '''
-        Calculate ranking for element in current population
-        '''
-        fit = []
-        for i in range(len(pop)):
-            fit.append(pop[i][self.ID_FIT])
-        arg_rank = array(fit).argsort()
-        rank = [i / sum(range(1, len(pop) + 1)) for i in range(1, len(pop) + 1)]
-        return rank
-
-    def wheel_select(self, pop, prob):
-        '''
-        Select dad and mom from current population by rank
-        '''
+    def crossover(self, dad, mom):
         r = random()
-        sum = prob[0]
-        for i in range(1, len(pop) + 1):
-            if sum > r:
-                return i - 1
-            else:
-                sum += prob[i]
-        return sum
-
-    def cross_over(self, dad_element, mom_element):
-        '''
-        crossover dad and mom choose from current population
-        '''
-        r = random()
-        child_element = []
+        child = []
         if r < self.p_c:
-            is_not_valid = True
-            while is_not_valid:
-                for i in range(len(dad_element[0])):
-                    child_element.append((dad_element[0][i] + mom_element[0][i]) / 2)
-                child_schedule = matrix_to_schedule(child_element[0], child_element[1], self.fog_cloud_paths)
-                if child_schedule.is_valid():
-                    is_not_valid = False
-            return [child_element, self.compute_fitness(child_schedule)]
-        if dad_element[1] < mom_element[1]:
-            if Config.METRICS == 'trade-off':
-                return mom_element
-            else:
-                return dad_element
+            while True:
+                for i in range(len(dad[self.ID_SOL])):
+                    child.append((dad[self.ID_SOL][i] + mom[self.ID_SOL][i]) / 2)
+                schedule = matrix_to_schedule(self.problem, child[0], child[1])
+                if schedule.is_valid():
+                    fitness = self.Fit.fitness(schedule)
+                    break
+            return [child, fitness]  # [solution, fit]
         else:
-            if Config.METRICS == 'trade-off':
-                return dad_element
+            if Config.METRICS == "trade-off":
+                return mom if dad[self.ID_FIT] < mom[self.ID_FIT] else dad
             else:
-                return mom_element
+                return dad if dad[self.ID_FIT] < mom[self.ID_FIT] else mom
 
     def select(self, pop):
-        '''
-        Select from current population and create new population
-        '''
-        new_pop = []
-        sum_fit = 0
-        for i in range(len(pop)):
-            sum_fit += pop[0][1]
-        while len(new_pop) < self.pop_size:
-            rank = self.cal_rank(pop)
-            dad_index = self.wheel_select(pop, rank)
-            mom_index = self.wheel_select(pop, rank)
+        pop_new = []
+        while len(pop_new) < self.pop_size:
+            fit_list = [item[self.ID_FIT] for item in pop]
+            dad_index = self.get_index_roulette_wheel_selection(fit_list)
+            mom_index = self.get_index_roulette_wheel_selection(fit_list)
             while dad_index == mom_index:
-                mom_index = self.wheel_select(pop, rank)
+                mom_index = self.get_index_roulette_wheel_selection(fit_list)
             dad = pop[dad_index]
             mom = pop[mom_index]
-            new_sol1 = self.cross_over(dad, mom)
-            new_pop.append(new_sol1)
-        return new_pop
+            sol_new = self.crossover(dad, mom)
+            pop_new.append(sol_new)
+        return pop_new
 
     def mutate(self, pop):
-        '''
-        Mutate new population
-        '''
-        for i in range(len(pop)):
-            is_not_valid = True
-            while is_not_valid:
-                for j in range(len(pop[i][0])):
-                    if random() < self.p_m:
-                        num_value_change = choice(range(pop[i][0][j].shape[0] * pop[i][0][j].shape[1]))
-                        for k in range(num_value_change):
-                            task_idx = choice(range(pop[i][0][j].shape[0]))
-                            device_idx = choice(range(pop[i][0][j].shape[1]))
-                            pop[i][0][j][task_idx][device_idx] = uniform(-1, 1)
-                schedule = matrix_to_schedule(pop[i][0][0], pop[i][0][1], self.fog_cloud_paths)
+        for i in range(self.pop_size):
+            while True:
+                child = []
+                for j in range(len(pop[i][self.ID_SOL])):
+                    sol_part_temp = pop[i][self.ID_SOL][j]
+                    for k_row in range(sol_part_temp.shape[0]):
+                        for k_col in range(sol_part_temp.shape[1]):
+                            if uniform() < self.p_m:
+                                sol_part_temp[k_row][k_col] = uniform(self.domain_range[0], self.domain_range[1])
+                    child.append(sol_part_temp)
+                schedule = matrix_to_schedule(self.problem, child[0], child[1])
                 if schedule.is_valid():
-                    is_not_valid = False
-            pop[i][1] = self.compute_fitness(schedule)
+                    fitness = self.Fit.fitness(schedule)
+                    break
+            pop[i] = [child, fitness]
         return pop
+
+    def evolve(self, pop):
+        pop = self.select(pop)
+        pop = self.mutate(pop)
+        return pop
+
 
