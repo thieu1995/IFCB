@@ -18,8 +18,8 @@ class Fitness:
         self.clouds = problem["clouds"]
         self.fogs = problem["fogs"]
         self.peers = problem["peers"]
-        self.tasks = problem["task"]
-        self.list_to_dict(self.clouds, self.fogs, self.peers, self.tasks)
+        self.tasks = problem["tasks"]
+        self.list_to_dict({'clouds': self.clouds, 'fogs': self.fogs, 'peers': self.peers, 'tasks': self.tasks})
 
         self._min_power = 0
         self._min_latency = 0
@@ -28,12 +28,12 @@ class Fitness:
         self.beta_trade_off = 1 / 3
 
     def list_to_dict(self, *attributes):
-        for idx, attr in enumerate(attributes):
-            objs = getattr(self, attr)
-            obj_list = {}
-            for obj in objs:
-                obj_list[obj.id] = obj
-            setattr(self, attr, obj_list)
+        for idx, attrs in enumerate(attributes):
+            for key, values in attrs.items():
+                obj_list = {}
+                for obj in values:
+                    obj_list[obj.id] = obj
+                setattr(self, key, obj_list)
 
     def set_min_power(self, value: float):
         self._min_power = value
@@ -71,9 +71,11 @@ class Fitness:
             # print('latency information: ', self._min_latency, latency, self._min_latency / latency)
             # print('cost information: ', self._min_cost, cost, self._min_cost / cost)
             # print('------------------------')
-            return self.alpha_trade_off * (self._min_power / power) \
-                   + self.beta_trade_off * (self._min_latency / latency) \
-                   + (1 - self.alpha_trade_off - self.beta_trade_off) * (self._min_cost / cost)
+            # return self.alpha_trade_off * (self._min_power / power) \
+            #        + self.beta_trade_off * (self._min_latency / latency) \
+            #        + (1 - self.alpha_trade_off - self.beta_trade_off) * (self._min_cost / cost)
+            return self.alpha_trade_off * power + self.beta_trade_off * latency +\
+                   (1 - self.alpha_trade_off - self.beta_trade_off) * cost
         else:
             print(f'[ERROR] Metrics {Config.METRICS} is not supported in class FitnessManager')
 

@@ -55,7 +55,7 @@ def load_tasks(filename: str) -> List[Task]:
         return tasks
 
 
-def load_cloudlets(filename: str) -> Tuple[List[Cloud], List[Fog], List[Node]]:
+def load_nodes(filename: str) -> Tuple[List[Cloud], List[Fog], List[Node]]:
     clouds = []
     fogs = []
     peers = []

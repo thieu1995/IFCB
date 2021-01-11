@@ -1,3 +1,5 @@
+data/
+
 drafts/
 .idea/
 model/blockchain/peer.py

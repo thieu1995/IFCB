@@ -70,7 +70,7 @@ def computation_power(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Sche
                 fog_power += fog.beta * task.r_p
                 start_time_slot = max(0, time_slot - fog.tau)
                 for i in range(start_time_slot, time_slot - 1):
-                    task = tasks.values()[i]
+                    task = list(tasks.values())[i]
                     factor = 1 / 2 ** (time_slot - i + 1)
                     fog_power += factor * fog.beta * task.r_s
 
@@ -81,7 +81,7 @@ def computation_power(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Sche
                 task = tasks[list_task_id[time_slot]]
                 cloud_power += cloud.beta * task.q_p
                 for i in range(time_slot - 1):
-                    task = tasks.values()[i]
+                    task = list(tasks.values())[i]
                     factor = 1 / 2 ** (time_slot - i + 1)
                     cloud_power += factor * cloud.beta * task.q_s
 

@@ -26,7 +26,7 @@ def data_forwarding_cost(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: S
             fog_cost += fog.sigma_device_idle + fog.sigma_idle
             if len(list_task_id) > time_slot:
                 task = tasks[list_task_id[time_slot]]
-                fog_cost += (fog.eg_sigma + fog.fi_sigma) * (task.r_p + task.r_s)
+                fog_cost += (fog.sigma_device + fog.sigma) * (task.r_p + task.r_s)
 
         for cloud_id, list_task_id in schedule.schedule_clouds_tasks.items():
             if len(list_task_id) <= time_slot:
@@ -39,7 +39,7 @@ def data_forwarding_cost(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: S
             cloud_cost += (fog.sigma_device + fog.sigma + cloud.sigma) * (task.q_p + task.q_s)
 
     list_task_handlers = schedule.get_list_task_handlers()
-    for peer_id, list_task_id in schedule.schedule_peers_tasks.item():
+    for peer_id, list_task_id in schedule.schedule_peers_tasks.items():
         for task_id in list_task_id:
             fog_id, cloud_id = list_task_handlers[task_id]
             fog = fogs[fog_id]
@@ -67,7 +67,7 @@ def computation_cost(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Sched
                 fog_cost += fog.pi * task.r_p
                 start_time_slot = max(0, time_slot - fog.tau)
                 for i in range(start_time_slot, time_slot - 1):
-                    task = tasks.values()[i]
+                    task = list(tasks.values())[i]
                     factor = 1 / 2 ** (time_slot - i + 1)
                     fog_cost += factor * fog.pi * task.r_s
 
@@ -79,7 +79,7 @@ def computation_cost(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Sched
                 task = tasks[task_id]
                 cloud_cost += cloud.pi * task.q_p
                 for i in range(time_slot - 1):
-                    task = tasks[i]
+                    task = list(tasks.values())[i]
                     factor = 1 / 2 ** (time_slot - i + 1)
                     cloud_cost += factor * cloud.pi * task.q_s
 

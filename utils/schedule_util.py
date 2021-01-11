@@ -46,7 +46,7 @@ def matrix_to_schedule(problem, matrix_cloud: ndarray, matrix_fog: ndarray):
         list_task_id = []
         for task_stt, cloud_stt in enumerate(list_task_stt):
             if cl_stt == cloud_stt:
-                list_task_id.append(tasks[task_stt])
+                list_task_id.append(tasks[task_stt].id)
         schedule.schedule_clouds_tasks[clouds[cl_stt].id] = list_task_id
 
     # convert matrix_fog to schedule.schedule_flogs_tasks
@@ -55,7 +55,7 @@ def matrix_to_schedule(problem, matrix_cloud: ndarray, matrix_fog: ndarray):
         list_task_id = []
         for task_stt, fog_stt in enumerate(list_task_stt):
             if fg_stt == fog_stt:
-                list_task_id.append(tasks[task_stt])
+                list_task_id.append(tasks[task_stt].id)
         schedule.schedule_fogs_tasks[fogs[fg_stt].id] = list_task_id
 
     # create a schedule for blockchain peers

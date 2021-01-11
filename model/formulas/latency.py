@@ -46,7 +46,7 @@ def processing_latency(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Sch
             task = tasks[task_id]
             cloud_latency += cloud.lamda * task.q_p
             for i in range(time_slot - 1):
-                task = task.values()[i]
+                task = list(tasks.values())[i]
                 factor = 1 / 2 ** (time_slot - i + 1)
                 cloud_latency += factor * cloud.lamda * task.q_s
 
@@ -57,7 +57,7 @@ def processing_latency(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Sch
             fog_latency += fog.lamda * task.r_p
             start_time_slot = max(0, time_slot - fog.tau)
             for i in range(start_time_slot, time_slot - 1):
-                task = tasks.values()[i]
+                task = list(tasks.values())[i]
                 factor = 1 / 2 ** (time_slot - i + 1)
                 fog_latency += factor * fog.lamda * task.r_s
 
