@@ -15,7 +15,8 @@ from utils.schedule_util import matrix_to_schedule
 
 class GAEngine(Root):
 
-    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, time_bound=None, domain_range=None, p_c=0.9, p_m=0.05):
+    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, time_bound=None, domain_range=None,
+                 p_c=0.9, p_m=0.05):
         super().__init__(problem, pop_size, epoch, func_eval, time_bound, domain_range)
         self.p_c = p_c
         self.p_m = p_m
@@ -33,7 +34,7 @@ class GAEngine(Root):
                     break
             return [child, fitness]  # [solution, fit]
         else:
-            if Config.METRICS == "trade-off":
+            if Config.METRICS in Config.METRICS_MAX:
                 return mom if dad[self.ID_FIT] < mom[self.ID_FIT] else dad
             else:
                 return dad if dad[self.ID_FIT] < mom[self.ID_FIT] else mom
@@ -70,9 +71,13 @@ class GAEngine(Root):
             pop[i] = [child, fitness]
         return pop
 
-    def evolve(self, pop):
+    def evolve(self, pop, fe_mode=None):
         pop = self.select(pop)
         pop = self.mutate(pop)
-        return pop
+        if fe_mode is None:
+            return pop
+        else:
+            counter = 2*self.pop_size   # pop_new + pop_mutation operations
+            return pop, counter
 
 

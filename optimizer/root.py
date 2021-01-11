@@ -64,13 +64,13 @@ class Root:
             if r > total_sum:
                 return idx
 
-    def evolve(self, pop):
+    def evolve(self, pop, fe_mode=None):
         pass
 
     def train(self):
         print(f'Start training with: {self.__class__} algorithm')
         pop = [self.create_solution() for _ in range(self.pop_size)]
-        if Config.METRICS == 'trade-off':
+        if Config.METRICS in Config.METRICS_MAX:
             g_best = max(pop, key=lambda x: x[self.ID_FIT])
         else:
             g_best = min(pop, key=lambda x: x[self.ID_FIT])
@@ -80,7 +80,7 @@ class Root:
             for epoch in range(self.epoch):
                 time_epoch_start = time()
                 pop = self.evolve(pop)
-                if Config.METRICS == 'trade-off':
+                if Config.METRICS in Config.METRICS_MAX:
                     current_best = max(pop, key=lambda x: x[self.ID_FIT])
                     if current_best[self.ID_FIT] > g_best_list[-1]:
                         g_best = deepcopy(current_best)
@@ -100,7 +100,7 @@ class Root:
             for epoch in range(self.epoch):
                 time_epoch_start = time()
                 pop = self.evolve(pop)
-                if Config.METRICS == 'trade-off':
+                if Config.METRICS in Config.METRICS_MAX:
                     current_best = max(pop, key=lambda x: x[self.ID_FIT])
                     if current_best[self.ID_FIT] > g_best_list[-1]:
                         g_best = deepcopy(current_best)
@@ -116,5 +116,26 @@ class Root:
                 if time() - time_bound_start >= self.time_bound:
                     print('====== Over time for training ======')
                     break
+            return g_best[0], g_best[1], array(g_best_list)
+        elif Config.MODE == "fe":
+            print(f'Training algorithm by: function evalution (mode) with: {self.func_eval} FE')
+            fe_counter = 0
+            time_fe_start = time()
+            while fe_counter < self.func_eval:
+                pop, counter = self.evolve(pop, Config.MODE)
+                if Config.METRICS in Config.METRICS_MAX:
+                    current_best = max(pop, key=lambda x: x[self.ID_FIT])
+                    if current_best[self.ID_FIT] > g_best_list[-1]:
+                        g_best = deepcopy(current_best)
+                else:
+                    current_best = min(pop, key=lambda x: x[1])
+                    if current_best[self.ID_FIT] < g_best_list[-1]:
+                        g_best = deepcopy(current_best)
+                g_best_list.append(g_best[self.ID_FIT])
+                fe_counter += counter
+                time_fe_end = time() - time_fe_start
+                print(f'Current best fit {current_best[self.ID_FIT]:.4f}, '
+                      f'Global best fit {g_best[self.ID_FIT]:.4f}, '
+                      f'Epoch {fe_counter} with time: {time_fe_end:.2f}')
             return g_best[0], g_best[1], array(g_best_list)
 

@@ -16,8 +16,33 @@ class Config:
     CORE_DATA_DIR = f'{basedir}/data'
     INPUT_DATA = f'{CORE_DATA_DIR}/input_data'
     RESULTS_DATA = f'{CORE_DATA_DIR}/final_results'
-    METRICS = 'trade-off'  # power, latency, cost, trade-off
-    MODE = 'time'  # time, epochs
+    MODE = 'time'  # time, epoch, fe (function evaluation counter instead of epoch)
+
+    ### Single Objective
+    # 1. power              --> find Min
+    # 2. latency            --> find Min
+    # 3. cost               --> find Min
+
+    ### Multiple Objective
+    ## Single target
+    # 1. weighting          --> find Min
+    # 2. distancing (demand-level vector)       --> find Min
+    # 3. min-max formulation                    --> find Min
+    # 4. weighting-min formulation  # the paper of Thang and Khiem      --> find Max
+
+    ## Multi-target
+    # 1. Pareto-front
+
+    ## finally: metrics = ["power", "latency", "cost", "weighting", "distancing", "min-max", "weighting-min", "pareto",...]
+    METRICS_NEED_MIN = False
+    METRICS_MAX = ["weighting-min", ]
+    METRICS = 'weighting-min'
+    OBJ_WEIGHTING_METRICS = [0.2, 0.3, 0.5]
+    OBJ_DISTANCING_METRICS = [1000, 100000, 1000]  ## DEMAND-LEVEL REQUIREMENT
+    OBJ_MINMAX_METRICS = [1000, 100000, 1000]
+    OBJ_MIN_METRICS = [1000, 100000, 1000]
+    OBJ_WEIGHTING_MIN_METRICS_1 = [0.2, 0.3, 0.5]
+    OBJ_WEIGHTING_MIN_METRICS_2 = [1000, 100000, 1000]
 
 
 class DefaultData:

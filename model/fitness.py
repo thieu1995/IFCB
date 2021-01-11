@@ -10,6 +10,8 @@
 from config import *
 from .schedule import Schedule
 from model.formulas import power, latency, cost
+from numpy import array
+from numpy.linalg import norm
 
 
 class Fitness:
@@ -24,8 +26,6 @@ class Fitness:
         self._min_power = 0
         self._min_latency = 0
         self._min_cost = 0
-        self.alpha_trade_off = 1 / 3
-        self.beta_trade_off = 1 / 3
 
     def list_to_dict(self, *attributes):
         for idx, attrs in enumerate(attributes):
@@ -44,13 +44,6 @@ class Fitness:
     def set_min_cost(self, value: float):
         self._min_cost = value
 
-    def set_trade_off(self, trade_off_value):
-        self.alpha_trade_off = trade_off_value[0]
-        self.beta_trade_off = trade_off_value[1]
-        assert self.alpha_trade_off >= 0
-        assert self.beta_trade_off >= 0
-        assert self.alpha_trade_off + self.beta_trade_off <= 1.0
-
     def fitness(self, solution: Schedule) -> float:
         power = self.calc_power_consumption(solution)
         latency = self.calc_latency(solution)
@@ -66,16 +59,23 @@ class Fitness:
             return latency
         elif Config.METRICS == 'cost':
             return cost
-        elif Config.METRICS == 'trade-off':
-            # print('power information: ', self._min_power, power, self._min_power / power)
-            # print('latency information: ', self._min_latency, latency, self._min_latency / latency)
-            # print('cost information: ', self._min_cost, cost, self._min_cost / cost)
-            # print('------------------------')
-            # return self.alpha_trade_off * (self._min_power / power) \
-            #        + self.beta_trade_off * (self._min_latency / latency) \
-            #        + (1 - self.alpha_trade_off - self.beta_trade_off) * (self._min_cost / cost)
-            return self.alpha_trade_off * power + self.beta_trade_off * latency +\
-                   (1 - self.alpha_trade_off - self.beta_trade_off) * cost
+        elif Config.METRICS == "weighting":
+            w = array(Config.OBJ_DISTANCING_METRICS)
+            v = array([power, latency, cost])
+            return sum(w * v)
+        elif Config.METRICS == "distancing":
+            o = array(Config.OBJ_DISTANCING_METRICS)
+            v = array([power, latency, cost])
+            return norm(o-v)
+        elif Config.METRICS == 'min-max':
+            o = array(Config.OBJ_MINMAX_METRICS)
+            v = array([power, latency, cost])
+            return max((v-o)/o)         # Need to minimize the relative deviation of single objective functions
+        elif Config.METRICS == "weighting-min":   # The paper of Thang and Khiem
+            w = array(Config.OBJ_WEIGHTING_MIN_METRICS_1)
+            o = array(Config.OBJ_WEIGHTING_MIN_METRICS_2)
+            v = array([power, latency, cost])
+            return sum((w * o) / v)
         else:
             print(f'[ERROR] Metrics {Config.METRICS} is not supported in class FitnessManager')
 
