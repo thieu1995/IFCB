@@ -31,7 +31,7 @@ class BaseEO(Root):
             pos_list = [item[self.ID_POS][idx] for item in list_equilibrium]
             pos_mean = mean(pos_list, axis=0)
             c_mean.append(pos_mean)
-        schedule = matrix_to_schedule(self.problem, c_mean[0], c_mean[1])
+        schedule = matrix_to_schedule(self.problem, c_mean)
         if schedule.is_valid():
             fit = self.Fit.fitness(schedule)
             list_equilibrium.append([c_mean, fit])
@@ -64,7 +64,7 @@ class BaseEO(Root):
                     temp = c_eq[j] + (pop[i][self.ID_POS][j] - c_eq[j]) * f + (g * self.V / lamda) * (1.0 - f)  # Eq. 16
                     temp = self.amend_position_random(temp)
                     child.append(temp)
-                schedule = matrix_to_schedule(self.problem, child[0], child[1])
+                schedule = matrix_to_schedule(self.problem, child)
                 if schedule.is_valid():
                     fit = self.Fit.fitness(schedule)
                     break

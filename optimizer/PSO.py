@@ -34,7 +34,7 @@ class BasePSO(Root):
         while True:
             pos_mt_cloud = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem["tasks"]), len(self.problem["clouds"])))
             pos_mt_fog = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem["tasks"]), len(self.problem["fogs"])))
-            schedule = matrix_to_schedule(self.problem, pos_mt_cloud, pos_mt_fog)
+            schedule = matrix_to_schedule(self.problem, [pos_mt_cloud, pos_mt_fog])
             if schedule.is_valid():
                 fitness = self.Fit.fitness(schedule)
                 vel_mt_cloud = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem["tasks"]), len(self.problem["clouds"])))
@@ -59,7 +59,7 @@ class BasePSO(Root):
                     x_temp = self.amend_position_random(x_temp)
                     x_new.append(x_temp)
                     v_new.append(v_temp)
-                schedule = matrix_to_schedule(self.problem, x_new[0], x_new[1])
+                schedule = matrix_to_schedule(self.problem, x_new)
                 if schedule.is_valid():
                     fit_new = self.Fit.fitness(schedule)
                     pop[i][self.ID_POS] = x_new

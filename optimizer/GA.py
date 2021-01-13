@@ -29,7 +29,7 @@ class BaseGA(Root):
             while True:
                 for i in range(len(dad[self.ID_POS])):
                     child.append((dad[self.ID_POS][i] + mom[self.ID_POS][i]) / 2)
-                schedule = matrix_to_schedule(self.problem, child[0], child[1])
+                schedule = matrix_to_schedule(self.problem, child)
                 if schedule.is_valid():
                     fitness = self.Fit.fitness(schedule)
                     break
@@ -65,7 +65,7 @@ class BaseGA(Root):
                             if uniform() < self.p_m:
                                 sol_part_temp[k_row][k_col] = uniform(self.domain_range[0], self.domain_range[1])
                     child.append(sol_part_temp)
-                schedule = matrix_to_schedule(self.problem, child[0], child[1])
+                schedule = matrix_to_schedule(self.problem, child)
                 if schedule.is_valid():
                     fitness = self.Fit.fitness(schedule)
                     break

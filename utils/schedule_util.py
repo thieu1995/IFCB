@@ -19,14 +19,14 @@ def make_dict_from_list_object(list_obj):
     return my_dict
 
 
-def matrix_to_schedule(problem, matrix_cloud: ndarray, matrix_fog: ndarray):
+def matrix_to_schedule(problem, solution: list):
     """
     Convert matrix data to schedule object
-    :param cloud_matrix: n_task x n_cloud
-    :param fog_matrix: n_task x n_fog
-
+    :param solution:
+        [ n_task x n_cloud, n_task x n_fog ]
     :return: Schedule obj or None
     """
+    matrix_cloud, matrix_fog = solution[0], solution[1]
     clouds = problem["clouds"]
     fogs = problem["fogs"]
     tasks = problem["tasks"]

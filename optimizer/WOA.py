@@ -37,7 +37,7 @@ class BaseWOA(Root):
                         for j in range(len(pop[i][self.ID_POS])):
                             D = g_best[self.ID_POS][j] - A * abs(C * g_best[self.ID_POS][j] - pop[i][self.ID_POS][j])
                             child.append(D)
-                        schedule = matrix_to_schedule(self.problem, child[0], child[1])
+                        schedule = matrix_to_schedule(self.problem, child)
                         if schedule.is_valid():
                             fitness = self.Fit.fitness(schedule)
                             break
@@ -48,7 +48,7 @@ class BaseWOA(Root):
                         for j in range(len(pop[i][self.ID_POS])):
                             D = pop[id_rand][self.ID_POS][j] - A * abs(C * pop[id_rand][self.ID_POS][j] - pop[i][self.ID_POS][j])
                             child.append(D)
-                        schedule = matrix_to_schedule(self.problem, child[0], child[1])
+                        schedule = matrix_to_schedule(self.problem, child)
                         if schedule.is_valid():
                             fitness = self.Fit.fitness(schedule)
                             break
@@ -59,7 +59,7 @@ class BaseWOA(Root):
                         D1 = abs(g_best[self.ID_POS][j] - pop[i][self.ID_POS][j])
                         D = D1 * exp(self.b * l) * cos(2 * pi * l) + g_best[self.ID_POS][j]
                         child.append(D)
-                    schedule = matrix_to_schedule(self.problem, child[0], child[1])
+                    schedule = matrix_to_schedule(self.problem, child)
                     if schedule.is_valid():
                         fitness = self.Fit.fitness(schedule)
                         break

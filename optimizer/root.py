@@ -34,7 +34,7 @@ class Root:
         while True:
             matrix_cloud = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem["tasks"]), len(self.problem["clouds"])))
             matrix_fog = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem["tasks"]), len(self.problem["fogs"])))
-            schedule = matrix_to_schedule(self.problem, matrix_cloud, matrix_fog)
+            schedule = matrix_to_schedule(self.problem, [matrix_cloud, matrix_fog])
             if schedule.is_valid():
                 fitness = self.Fit.fitness(schedule)
                 break

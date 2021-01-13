@@ -39,7 +39,7 @@ def save_experiment_result(problem, solution, name_mha, name_paras, results_fold
     experiment_results_path = f'{results_folder_path}/experiment_results/{name_mha}/{name_paras}'
     Path(experiment_results_path).mkdir(parents=True, exist_ok=True)
     fit_obj = Fitness(problem)
-    schedule = matrix_to_schedule(problem, solution[0], solution[1])
+    schedule = matrix_to_schedule(problem, solution)
     power = fit_obj.calc_power_consumption(schedule)
     latency = fit_obj.calc_latency(schedule)
     cost = fit_obj.calc_cost(schedule)
