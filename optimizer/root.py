@@ -7,7 +7,7 @@
 #       Github:     https://github.com/thieu1995                                                        %
 # ------------------------------------------------------------------------------------------------------%
 
-from numpy import array, ptp
+from numpy import array, ptp, where, logical_and
 from numpy.random import uniform
 from time import time
 from copy import deepcopy
@@ -18,7 +18,7 @@ from sys import exit
 
 
 class Root:
-    ID_SOL = 0
+    ID_POS = 0
     ID_FIT = 1
 
     def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, time_bound=None, domain_range=None):
@@ -65,7 +65,11 @@ class Root:
             if r > total_sum:
                 return idx
 
-    def evolve(self, pop, fe_mode=None):
+    def amend_position_random(self, position=None):
+        return where(logical_and(self.domain_range[0] <= position, position <= self.domain_range[1]),
+                     position, uniform(self.domain_range[0], self.domain_range[1]))
+
+    def evolve(self, pop, fe_mode=None, epoch=None, g_best=None):
         pass
 
     def train(self):
@@ -87,7 +91,7 @@ class Root:
             print(f'Training by: epoch (mode) with: {self.epoch} epochs, {time_bound_log}')
             for epoch in range(self.epoch):
                 time_epoch_start = time()
-                pop = self.evolve(pop)
+                pop = self.evolve(pop, None, epoch, g_best)
                 if Config.METRICS in Config.METRICS_MAX:
                     current_best = max(pop, key=lambda x: x[self.ID_FIT])
                     if current_best[self.ID_FIT] > g_best_list[-1]:
@@ -111,7 +115,7 @@ class Root:
             fe_counter = 0
             time_fe_start = time()
             while fe_counter < self.func_eval:
-                pop, counter = self.evolve(pop, Config.MODE)
+                pop, counter = self.evolve(pop, Config.MODE, None, g_best)
                 if Config.METRICS in Config.METRICS_MAX:
                     current_best = max(pop, key=lambda x: x[self.ID_FIT])
                     if current_best[self.ID_FIT] > g_best_list[-1]:

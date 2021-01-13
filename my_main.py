@@ -106,7 +106,8 @@ if __name__ == '__main__':
         "peers": peers
     }
     models = [
-        {"name": "BaseGA", "param_grid": OptParas.GA, "problem": problem},
+        # {"name": "BaseGA", "param_grid": OptParas.GA, "problem": problem},
+        {"name": "BasePSO", "param_grid": OptParas.PSO, "problem": problem},
     ]
 
     processes = []

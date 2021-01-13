@@ -7,192 +7,77 @@
 #       Github:     https://github.com/thieu1995                                                        %
 # ------------------------------------------------------------------------------------------------------%
 
-import time
-
-import numpy as np
-
-from algorithms.fitness_manager import FitnessManager
+from copy import deepcopy
 from config import Config
-from utils import get_min_value, matrix_to_schedule
+from optimizer.root import Root
+from numpy.random import uniform
+from utils.schedule_util import matrix_to_schedule
 
 
-class Particle:
-    def __init__(self, cloud_matrix=None, fog_matrix=None, clouds=None, fogs=None, tasks=None,
-                 fog_cloud_paths=None, element_value_range=None, trade_off_case=None):
-        self.cloud_matrix = cloud_matrix
-        self.fog_matrix = fog_matrix
-        self.clouds = clouds
-        self.fogs = fogs
-        self.tasks = tasks
-        self.time_scheduling = len(self.tasks) / 100 * 60
-        self.fog_cloud_paths = fog_cloud_paths
+class BasePSO(Root):
+    ID_POS = 0              # Current position
+    ID_FIT = 1              # Current fitness
+    ID_VEL = 2              # Current velocity
+    ID_LOCAL_POS = 3        # Personal best location
+    ID_LOCAL_FIT = 4        # Personal best fitness
 
-        self.pbest_cloud_matrix = self.cloud_matrix
-        self.pbest_fog_matrix = self.fog_matrix
+    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, time_bound=None, domain_range=None, paras=None):
+        super().__init__(problem, pop_size, epoch, func_eval, time_bound, domain_range)
+        if paras is None:
+            paras = {"w_min": 0.4, "w_max": 0.9, "c_local": 1.2, "c_global": 1.2}
+        self.w_min = paras["w_min"]
+        self.w_max = paras["w_max"]
+        self.c_local = paras["c_local"]
+        self.c_global = paras["c_global"]
 
-        self.velocity_cloud_matrix = np.zeros(self.cloud_matrix.shape)
-        self.velocity_fog_matrix = np.zeros(self.fog_matrix.shape)
+    def create_solution(self):
+        while True:
+            pos_mt_cloud = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem["tasks"]), len(self.problem["clouds"])))
+            pos_mt_fog = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem["tasks"]), len(self.problem["fogs"])))
+            schedule = matrix_to_schedule(self.problem, pos_mt_cloud, pos_mt_fog)
+            if schedule.is_valid():
+                fitness = self.Fit.fitness(schedule)
+                vel_mt_cloud = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem["tasks"]), len(self.problem["clouds"])))
+                vel_mt_fog = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem["tasks"]), len(self.problem["fogs"])))
+                break
+        return [[pos_mt_cloud, pos_mt_fog], fitness, [vel_mt_cloud, vel_mt_fog],
+                [deepcopy(pos_mt_cloud), deepcopy(pos_mt_fog)], deepcopy(fitness)]
+        # [solution, fit, velocity, local_solution, local_fitness]
 
-        if Config.METRICS == 'trade-off':
-            self.pbest_value = float('-inf')
-        else:
-            self.pbest_value = float('inf')
+    def evolve(self, pop, fe_mode=None, epoch=None, g_best=None):
+        # Update weight after each move count  (weight down)
+        w = (self.epoch - epoch) / self.epoch * (self.w_max - self.w_min) + self.w_min
 
-        self.schedule = matrix_to_schedule(self.cloud_matrix, self.fog_matrix, self.fog_cloud_paths)
-        self.fitness_manager = FitnessManager(self.clouds, self.fogs, self.tasks)
-        if Config.METRICS == 'trade-off':
-            self.min_value_information = get_min_value(element_value_range)
-            self.fitness_manager.set_min_power(self.min_value_information[str(len(self.tasks))]['power'])
-            self.fitness_manager.set_min_latency(self.min_value_information[str(len(self.tasks))]['latency'])
-            self.fitness_manager.set_min_cost(self.min_value_information[str(len(self.tasks))]['cost'])
-            self.fitness_manager.set_trade_off(trade_off_case)
-
-    def fitness(self):
-        self.schedule = matrix_to_schedule(self.cloud_matrix, self.fog_matrix, self.fog_cloud_paths)
-        fitness = self.fitness_manager.calc(self.schedule)
-        return fitness
-
-
-class PSOEngine:
-
-    def __init__(self, population_size=10, epochs=200):
-        self.population_size = population_size
-        self.epochs = epochs
-
-        self.particles = []
-        if Config.METRICS == 'trade-off':
-            self.gbest_value = float('-inf')
-        else:
-            self.gbest_value = float('inf')
-        self.gbest_cloud_matrix = None
-        self.gbest_fog_matrix = None
-        self.gbest_particle = None
-
-        self.max_w_old_velocation = 0.9
-        self.min_w_old_velocation = 0.1
-        self.w_local_best_position = 1.5
-        self.w_global_best_position = 1.5
-
-    def set_gbest(self):
-        if Config.METRICS == 'trade-off':
-            for particle in self.particles:
-                fitness_candidate = particle.fitness()
-                if particle.pbest_value < fitness_candidate:
-                    particle.pbest_value = fitness_candidate
-                    particle.pbest_cloud_matrix = particle.cloud_matrix
-                    particle.pbest_fog_matrix = particle.fog_matrix
-
-                if self.gbest_value < fitness_candidate:
-                    self.gbest_value = fitness_candidate
-                    self.gbest_cloud_matrix = particle.cloud_matrix
-                    self.gbest_fog_matrix = particle.fog_matrix
-                    self.gbest_particle = particle
-        else:
-            for particle in self.particles:
-                fitness_candidate = particle.fitness()
-                if particle.pbest_value > fitness_candidate:
-                    particle.pbest_value = fitness_candidate
-                    particle.pbest_cloud_matrix = particle.cloud_matrix
-                    particle.pbest_fog_matrix = particle.fog_matrix
-
-                if self.gbest_value > fitness_candidate:
-                    self.gbest_value = fitness_candidate
-                    self.gbest_cloud_matrix = particle.cloud_matrix
-                    self.gbest_fog_matrix = particle.fog_matrix
-                    self.gbest_particle = particle
-
-    def move_particles(self):
-        for particle in self.particles:
-            r1 = np.random.random_sample()
-            r2 = np.random.random_sample()
-
-            change_cloud_base_on_old_velocity = self.w_old_velocation * particle.velocity_cloud_matrix
-            change_fog_base_on_old_velocity = self.w_old_velocation * particle.velocity_fog_matrix
-
-            change_cloud_base_on_local_best = \
-                self.w_local_best_position * r1 * (particle.pbest_cloud_matrix - particle.cloud_matrix)
-            change_fog_base_on_local_best = \
-                self.w_local_best_position * r1 * (particle.pbest_fog_matrix - particle.fog_matrix)
-
-            change_cloud_base_on_global_best = \
-                self.w_global_best_position * r2 * (self.gbest_cloud_matrix - particle.cloud_matrix)
-            change_fog_base_on_global_best = \
-                self.w_global_best_position * r2 * (self.gbest_fog_matrix - particle.fog_matrix)
-
-            new_velocity_cloud_matrix = \
-                change_cloud_base_on_old_velocity + change_cloud_base_on_local_best + change_cloud_base_on_global_best
-            new_velocity_fog_matrix = \
-                change_fog_base_on_old_velocity + change_fog_base_on_local_best + change_fog_base_on_global_best
-
-            particle.velocity_cloud_matrix = new_velocity_cloud_matrix
-            particle.velocity_fog_matrix = new_velocity_fog_matrix
-
-            # print(f'particle cloud matrix before: {particle.cloud_matrix}')
-            particle.cloud_matrix = particle.cloud_matrix + particle.velocity_cloud_matrix
-            # print(f'particle cloud matrix after: {particle.cloud_matrix}')
-            # print('------------------------------')
-            particle.fog_matrix = particle.fog_matrix + particle.velocity_fog_matrix
-
-    def early_stopping(self, array, patience=20):
-        if patience <= len(array) - 1:
-            value = array[len(array) - patience]
-            arr = array[len(array) - patience + 1:]
-            check = 0
-            for val in arr:
-                if val < value:
-                    check += 1
-            if check != 0:
-                return False
-            return True
-        raise ValueError
-
-    def check_most_n_value(self, fitness_arr, n):
-        check = 0
-        for i in range(len(fitness_arr) - 2, len(fitness_arr) - n, -1):
-            if fitness_arr[i] == fitness_arr[-1]:
-                check += 1
-            if check == 4:
-                return True
-        return False
-
-    def evolve(self):
-        if Config.MODE == 'epochs':
-            print('|-> Start tuning by particle swarm optimization')
-            fitness_arr = []
-            for iteration in range(self.epochs):
-                self.w_old_velocation = \
-                    (self.epochs - iteration) / self.epochs * (self.max_w_old_velocation - self.min_w_old_velocation) \
-                    + self.min_w_old_velocation
-                start_time = time.time()
-                self.set_gbest()
-                self.move_particles()
-                # print('===> self.gbest_particle.position: {}'.format(self.gbest_particle.position))
-                fitness_arr.append(round(self.gbest_value, 8))
-                print(f'iteration: {iteration} fitness = {self.gbest_value:.8f}'
-                      f' with time for running: {time.time() - start_time:.2f}')
-                if iteration % 100 == 0:
-                    print(fitness_arr)
-            print(f'iterations: {iteration}: best fitness = {self.gbest_value}')
-            return self.gbest_cloud_matrix, self.gbest_fog_matrix, np.array(fitness_arr)
-        else:
-            print('|-> Start tuning by particle swarm optimization')
-            start_time_run = time.time()
-            fitness_arr = []
-            for iteration in range(self.epochs):
-                self.w_old_velocation = \
-                    (self.epochs - iteration) / self.epochs * (self.max_w_old_velocation - self.min_w_old_velocation) \
-                    + self.min_w_old_velocation
-                start_time = time.time()
-                self.set_gbest()
-                self.move_particles()
-                # print('===> self.gbest_particle.position: {}'.format(self.gbest_particle.position))
-                fitness_arr.append(round(self.gbest_value, 8))
-                print(f'iteration: {iteration} fitness = {self.gbest_value:.8f}'
-                      f' with time for running: {time.time() - start_time:.2f}')
-                if iteration % 100 == 0:
-                    print(fitness_arr)
-                if time.time() - start_time_run >= self.gbest_particle.time_scheduling:
-                    print('=== over time training ===')
+        for i in range(self.pop_size):
+            while True:
+                x_new = []
+                v_new = []
+                for j in range(len(pop[i][self.ID_POS])):
+                    v_temp = w * pop[i][self.ID_VEL][j] + self.c_local * uniform() * (pop[i][self.ID_LOCAL_POS][j] - pop[i][self.ID_POS][j]) + \
+                        self.c_global * uniform() * (g_best[self.ID_POS][j] - pop[i][self.ID_POS][j])
+                    x_temp = pop[i][self.ID_POS][j] + v_temp         # Xi(new) = Xi(old) + Vi(new) * deltaT (deltaT = 1)
+                    x_temp = self.amend_position_random(x_temp)
+                    x_new.append(x_temp)
+                    v_new.append(v_temp)
+                schedule = matrix_to_schedule(self.problem, x_new[0], x_new[1])
+                if schedule.is_valid():
+                    fit_new = self.Fit.fitness(schedule)
+                    pop[i][self.ID_POS] = x_new
+                    pop[i][self.ID_FIT] = fit_new
+                    pop[i][self.ID_VEL] = v_new
+                    # Update current position, current velocity and compare with past position, past fitness (local best)
+                    if Config.METRICS in Config.METRICS_MAX:
+                        if fit_new > pop[i][self.ID_LOCAL_FIT]:
+                            pop[i][self.ID_LOCAL_POS] = x_new
+                            pop[i][self.ID_LOCAL_FIT] = fit_new
+                    else:
+                        if fit_new < pop[i][self.ID_LOCAL_FIT]:
+                            pop[i][self.ID_LOCAL_POS] = x_new
+                            pop[i][self.ID_LOCAL_FIT] = fit_new
                     break
-            print(f'iterations: {iteration}: best fitness = {self.gbest_value}')
-            return self.gbest_cloud_matrix, self.gbest_fog_matrix, np.array(fitness_arr)
+
+        if fe_mode is None:
+            return pop
+        else:
+            counter = 2 * self.pop_size  # pop_new + pop_mutation operations
+            return pop, counter

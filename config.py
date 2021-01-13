@@ -76,6 +76,13 @@ class OptParas:     # Optimizer parameters config
         "p_c": [0.9],
         "p_m": [0.05]
     }
+    PSO = {
+        "w_min": [0.4],
+        "w_max": [0.9],
+        "c_local": [1.2],
+        "c_global": [1.2]
+    }
+
 
 class OptExp:       # Optimizer paras in experiments
     N_TRIALS = [10]

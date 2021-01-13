@@ -27,8 +27,8 @@ class BaseGA(Root):
         child = []
         if r < self.p_c:
             while True:
-                for i in range(len(dad[self.ID_SOL])):
-                    child.append((dad[self.ID_SOL][i] + mom[self.ID_SOL][i]) / 2)
+                for i in range(len(dad[self.ID_POS])):
+                    child.append((dad[self.ID_POS][i] + mom[self.ID_POS][i]) / 2)
                 schedule = matrix_to_schedule(self.problem, child[0], child[1])
                 if schedule.is_valid():
                     fitness = self.Fit.fitness(schedule)
@@ -58,8 +58,8 @@ class BaseGA(Root):
         for i in range(self.pop_size):
             while True:
                 child = []
-                for j in range(len(pop[i][self.ID_SOL])):
-                    sol_part_temp = pop[i][self.ID_SOL][j]
+                for j in range(len(pop[i][self.ID_POS])):
+                    sol_part_temp = pop[i][self.ID_POS][j]
                     for k_row in range(sol_part_temp.shape[0]):
                         for k_col in range(sol_part_temp.shape[1]):
                             if uniform() < self.p_m:
@@ -72,7 +72,7 @@ class BaseGA(Root):
             pop[i] = [child, fitness]
         return pop
 
-    def evolve(self, pop, fe_mode=None):
+    def evolve(self, pop, fe_mode=None, epoch=None, g_best=None):
         pop = self.select(pop)
         pop = self.mutate(pop)
         if fe_mode is None:
