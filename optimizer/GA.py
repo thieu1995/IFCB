@@ -13,13 +13,14 @@ from numpy.random import uniform, random
 from utils.schedule_util import matrix_to_schedule
 
 
-class GAEngine(Root):
+class BaseGA(Root):
 
-    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, time_bound=None, domain_range=None,
-                 p_c=0.9, p_m=0.05):
+    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, time_bound=None, domain_range=None, paras=None):
         super().__init__(problem, pop_size, epoch, func_eval, time_bound, domain_range)
-        self.p_c = p_c
-        self.p_m = p_m
+        if paras is None:
+            paras = {"p_c": 0.9, "p_m": 0.05}
+        self.p_c = paras["p_c"]
+        self.p_m = paras["p_m"]
 
     def crossover(self, dad, mom):
         r = random()

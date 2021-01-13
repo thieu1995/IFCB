@@ -16,7 +16,12 @@ class Config:
     CORE_DATA_DIR = f'{basedir}/data'
     INPUT_DATA = f'{CORE_DATA_DIR}/input_data'
     RESULTS_DATA = f'{CORE_DATA_DIR}/final_results'
-    MODE = 'time'  # time, epoch, fe (function evaluation counter instead of epoch)
+    MODE = 'epoch'  # epoch, fe (function evaluation counter instead of epoch)
+    TIME_BOUND = False  # time bound for the training process
+
+    METRICS_MAX = ["weighting-min", ]           # other methods need min - for calculate the global best fitness
+    METRICS_NEED_MIN_OBJECTIVE_VALUES = False   # For tunning all parameter to find the min-objective value of each objective.
+    MULTI_OBJECTIVE_SUPPORTERS = ["BaseNSGA", "BaseNSGA_II", "BaseNSGA_III", "BaseNSGA_C", "LSHADE"]
 
     ### Single Objective
     # 1. power              --> find Min
@@ -34,9 +39,7 @@ class Config:
     # 1. Pareto-front
 
     ## finally: metrics = ["power", "latency", "cost", "weighting", "distancing", "min-max", "weighting-min", "pareto",...]
-    METRICS_NEED_MIN = False
-    METRICS_MAX = ["weighting-min", ]
-    METRICS = 'min-max'
+    METRICS = 'power'
     OBJ_WEIGHTING_METRICS = [0.2, 0.3, 0.5]
     OBJ_DISTANCING_METRICS = [800, 40000, 500]  ## DEMAND-LEVEL REQUIREMENT
     OBJ_MINMAX_METRICS = [800, 40000, 500]
@@ -68,11 +71,18 @@ class DefaultData:
     RATE_CLOUD_PEER_LINKED = 0.2
 
 
+class OptParas:     # Optimizer parameters config
+    GA = {
+        "p_c": [0.9],
+        "p_m": [0.05]
+    }
 
-
-
-
-
-
-
+class OptExp:       # Optimizer paras in experiments
+    N_TRIALS = [10]
+    N_TASKS = [100]
+    TIME_BOUND_VALUES = [60, 100]
+    POP_SIZE = [100]
+    DOMAIN_RANGE = [[-1, 1]]
+    EPOCH = [3]
+    FE = [100000]
 

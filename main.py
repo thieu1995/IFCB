@@ -18,7 +18,7 @@ from pandas import DataFrame
 
 from config import Config
 from model.fitness import Fitness
-from optimizer.GA import GAEngine
+from optimizer.GA import BaseGA
 from utils.io_util import load_tasks, load_nodes
 from utils.schedule_util import matrix_to_schedule
 
@@ -30,7 +30,7 @@ def save_training_fitness_information(list_fitness, number_tasks, name_mha, name
     fitness_df = DataFrame(list_fitness)
     fitness_df.index.name = "epoch"
     fitness_df.to_csv(fitness_file_path, index=True, header=["fitness"])
-    if Config.METRICS_NEED_MIN:
+    if Config.METRICS_NEED_MIN_OBJECTIVE_VALUES:
         with open(f'{Config.RESULTS_DATA}/summary.txt', 'a+') as f:
             f.write(f'{Config.METRICS}, {number_tasks}, {name_mha}, {name_paras}, {list_fitness[-1]}\n')
 
@@ -64,7 +64,7 @@ def __optimize_schedule_with_ga(item):
     tasks = load_tasks(f'{Config.INPUT_DATA}/tasks_{number_tasks}.json')
     problem = deepcopy(item['problem'])
     problem["tasks"] = tasks
-    optimizer = GAEngine(problem, pop_size, epoch, func_eval, time_bound, domain_range)
+    optimizer = BaseGA(problem, pop_size, epoch, func_eval, time_bound, domain_range)
     solution, best_fit, best_fit_list = optimizer.train()
     name_mha = 'ga'
     name_paras = f'{epoch}_{pop_size}'

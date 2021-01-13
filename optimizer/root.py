@@ -14,6 +14,7 @@ from copy import deepcopy
 from config import Config
 from model.fitness import Fitness
 from utils.schedule_util import matrix_to_schedule
+from sys import exit
 
 
 class Root:
@@ -68,15 +69,22 @@ class Root:
         pass
 
     def train(self):
-        print(f'Start training with: {self.__class__} algorithm')
+        if Config.METRICS == "pareto" and self.__class__.__name__ not in Config.MULTI_OBJECTIVE_SUPPORTERS:
+            print(f'Method: {self.__class__.__name__} doesn"t support pareto-front fitness function type')
+            exit()
+        print(f'Start training by: {self.__class__.__name__} algorithm, fitness type: {Config.METRICS}')
         pop = [self.create_solution() for _ in range(self.pop_size)]
         if Config.METRICS in Config.METRICS_MAX:
             g_best = max(pop, key=lambda x: x[self.ID_FIT])
         else:
             g_best = min(pop, key=lambda x: x[self.ID_FIT])
         g_best_list = [g_best[self.ID_FIT]]
+        time_bound_start = time()
+        time_bound_log = "without time-bound."
+        if Config.TIME_BOUND:
+            time_bound_log = f'with time-bound: {self.time_bound} seconds.'
         if Config.MODE == 'epoch':
-            print(f'Training algorithm by: epoch (mode) with: {self.epoch} epochs')
+            print(f'Training by: epoch (mode) with: {self.epoch} epochs, {time_bound_log}')
             for epoch in range(self.epoch):
                 time_epoch_start = time()
                 pop = self.evolve(pop)
@@ -92,33 +100,14 @@ class Root:
                 time_epoch_end = time() - time_epoch_start
                 print(f'Current best fit {current_best[self.ID_FIT]:.4f}, '
                       f'Global best fit {g_best[self.ID_FIT]:.4f}, '
-                      f'Epoch {epoch + 1} with time: {time_epoch_end:.2f}')
-            return g_best[0], g_best[1], array(g_best_list)
-        elif Config.MODE == 'time':
-            print(f'Training algorithm by: time (mode) with: {self.time_bound} seconds')
-            time_bound_start = time()
-            for epoch in range(self.epoch):
-                time_epoch_start = time()
-                pop = self.evolve(pop)
-                if Config.METRICS in Config.METRICS_MAX:
-                    current_best = max(pop, key=lambda x: x[self.ID_FIT])
-                    if current_best[self.ID_FIT] > g_best_list[-1]:
-                        g_best = deepcopy(current_best)
-                else:
-                    current_best = min(pop, key=lambda x: x[1])
-                    if current_best[self.ID_FIT] < g_best_list[-1]:
-                        g_best = deepcopy(current_best)
-                g_best_list.append(g_best[self.ID_FIT])
-                time_epoch_end = time() - time_epoch_start
-                print(f'Current best fit {current_best[self.ID_FIT]:.4f}, '
-                      f'Global best fit {g_best[self.ID_FIT]:.4f}, '
-                      f'Epoch {epoch + 1} with time: {time_epoch_end:.2f}')
-                if time() - time_bound_start >= self.time_bound:
-                    print('====== Over time for training ======')
-                    break
+                      f'Epoch {epoch + 1} with time: {time_epoch_end:.2f} seconds')
+                if Config.TIME_BOUND:
+                    if time() - time_bound_start >= self.time_bound:
+                        print('====== Over time for training ======')
+                        break
             return g_best[0], g_best[1], array(g_best_list)
         elif Config.MODE == "fe":
-            print(f'Training algorithm by: function evalution (mode) with: {self.func_eval} FE')
+            print(f'Training by: function evalution (mode) with: {self.func_eval} FE, {time_bound_log}')
             fe_counter = 0
             time_fe_start = time()
             while fe_counter < self.func_eval:
@@ -136,6 +125,10 @@ class Root:
                 time_fe_end = time() - time_fe_start
                 print(f'Current best fit {current_best[self.ID_FIT]:.4f}, '
                       f'Global best fit {g_best[self.ID_FIT]:.4f}, '
-                      f'Epoch {fe_counter} with time: {time_fe_end:.2f}')
+                      f'FE {fe_counter} with time: {time_fe_end:.2f} seconds')
+                if Config.TIME_BOUND:
+                    if time() - time_bound_start >= self.time_bound:
+                        print('====== Over time for training ======')
+                        break
             return g_best[0], g_best[1], array(g_best_list)
 
