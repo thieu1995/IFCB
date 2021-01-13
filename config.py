@@ -86,6 +86,12 @@ class OptParas:     # Optimizer parameters config
         "p": [0.5],
         "b": [1.0]
     }
+    EO = {              # This parameters are actually fixed parameters in EO
+        "V": [1.0],
+        "a1": [2.0],
+        "a2": [1.0],
+        "GP": [0.5]
+    }
 
 
 class OptExp:       # Optimizer paras in experiments
@@ -94,6 +100,6 @@ class OptExp:       # Optimizer paras in experiments
     TIME_BOUND_VALUES = [60, 100]
     POP_SIZE = [100]
     DOMAIN_RANGE = [[-1, 1]]
-    EPOCH = [3]
+    EPOCH = [10]
     FE = [100000]
 
