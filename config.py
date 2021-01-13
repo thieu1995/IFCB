@@ -82,6 +82,10 @@ class OptParas:     # Optimizer parameters config
         "c_local": [1.2],
         "c_global": [1.2]
     }
+    WOA = {             # This parameters are actually fixed parameters in WOA
+        "p": [0.5],
+        "b": [1.0]
+    }
 
 
 class OptExp:       # Optimizer paras in experiments

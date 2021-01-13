@@ -9,3 +9,4 @@
 
 from .GA import BaseGA
 from .PSO import BasePSO
+from .WOA import BaseWOA

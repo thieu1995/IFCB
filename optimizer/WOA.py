@@ -7,153 +7,66 @@
 #       Github:     https://github.com/thieu1995                                                        %
 # ------------------------------------------------------------------------------------------------------%
 
-import time
-import numpy as np
+from optimizer.root import Root
+from numpy.random import uniform, random, choice
+from numpy import exp, cos, pi
+from utils.schedule_util import matrix_to_schedule
 
-from config import *
 
+class BaseWOA(Root):
 
-class WoaEngine:
-    def __init__(self, population_size=100, epochs=500):
-        self.population_size = population_size
-        self.epochs = epochs
+    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, time_bound=None, domain_range=None, paras=None):
+        super().__init__(problem, pop_size, epoch, func_eval, time_bound, domain_range)
+        if paras is None:
+            paras = {"p": 0.5, "b": 1.0}
+        self.p = paras["p"]
+        self.b = paras["b"]
 
-        self.particles = []
-        if Config.METRICS == 'trade-off':
-            self.gbest_value = float('-inf')
+    def evolve(self, pop, fe_mode=None, epoch=None, g_best=None):
+        a = 2 - 2 * epoch / (self.epoch - 1)    # linearly decreased from 2 to 0
+        for i in range(self.pop_size):
+            r = random()
+            A = 2 * a * r - a
+            C = 2 * r
+            l = uniform(-1, 1)
+
+            if uniform() < self.p:
+                if abs(A) < 1:
+                    while True:
+                        child = []
+                        for j in range(len(pop[i][self.ID_POS])):
+                            D = g_best[self.ID_POS][j] - A * abs(C * g_best[self.ID_POS][j] - pop[i][self.ID_POS][j])
+                            child.append(D)
+                        schedule = matrix_to_schedule(self.problem, child[0], child[1])
+                        if schedule.is_valid():
+                            fitness = self.Fit.fitness(schedule)
+                            break
+                else:
+                    while True:
+                        child = []
+                        id_rand = choice(list(set(range(0, self.pop_size)) - {i}))   # select random 1 position in pop
+                        for j in range(len(pop[i][self.ID_POS])):
+                            D = pop[id_rand][self.ID_POS][j] - A * abs(C * pop[id_rand][self.ID_POS][j] - pop[i][self.ID_POS][j])
+                            child.append(D)
+                        schedule = matrix_to_schedule(self.problem, child[0], child[1])
+                        if schedule.is_valid():
+                            fitness = self.Fit.fitness(schedule)
+                            break
+            else:
+                while True:
+                    child = []
+                    for j in range(len(pop[i][self.ID_POS])):
+                        D1 = abs(g_best[self.ID_POS][j] - pop[i][self.ID_POS][j])
+                        D = D1 * exp(self.b * l) * cos(2 * pi * l) + g_best[self.ID_POS][j]
+                        child.append(D)
+                    schedule = matrix_to_schedule(self.problem, child[0], child[1])
+                    if schedule.is_valid():
+                        fitness = self.Fit.fitness(schedule)
+                        break
+            pop[i] = [child, fitness]
+
+        if fe_mode is None:
+            return pop
         else:
-            self.gbest_value = float('inf')
-        self.gbest_cloud_matrix = None
-        self.gbest_fog_matrix = None
-        self.gbest_particle = None
-
-    def set_gbest(self):
-        if Config.METRICS == 'trade-off':
-            for particle in self.particles:
-                fitness_candidate = particle.fitness()
-                if particle.pbest_value < fitness_candidate:
-                    particle.pbest_value = fitness_candidate
-                    particle.pbest_cloud_matrix = particle.cloud_matrix
-                    particle.pbest_fog_matrix = particle.fog_matrix
-
-                if self.gbest_value < fitness_candidate:
-                    self.gbest_value = fitness_candidate
-                    self.gbest_cloud_matrix = particle.cloud_matrix
-                    self.gbest_fog_matrix = particle.fog_matrix
-                    self.gbest_particle = particle
-        else:
-            for particle in self.particles:
-                fitness_candidate = particle.fitness()
-                if particle.pbest_value > fitness_candidate:
-                    particle.pbest_value = fitness_candidate
-                    particle.pbest_cloud_matrix = particle.cloud_matrix
-                    particle.pbest_fog_matrix = particle.fog_matrix
-
-                if self.gbest_value > fitness_candidate:
-                    self.gbest_value = fitness_candidate
-                    self.gbest_cloud_matrix = particle.cloud_matrix
-                    self.gbest_fog_matrix = particle.fog_matrix
-                    self.gbest_particle = particle
-
-    def evolve(self):
-        print('start with woa')
-        if Config.MODE == 'epochs':
-            fitness_arr = []
-            for epoch in range(self.epochs):
-                epoch_start_time = time.time()
-                self.set_gbest()
-                a = 2 * np.cos(epoch / (self.epochs - 1))
-
-                for particle in self.particles:
-
-                    r = np.random.rand()
-                    A = 2 * a * r - a
-                    C = 2 * r
-                    l = np.random.uniform(-1, 1)
-                    b = 1
-                    p = np.random.rand()
-
-                    if p < 0.5:
-                        if np.abs(A) < 1:
-                            D_cloud_matrix = np.abs(C * self.gbest_cloud_matrix - particle.cloud_matrix)
-                            D_fog_matrix = np.abs(C * self.gbest_fog_matrix - particle.fog_matrix)
-
-                            particle.cloud_matrix = self.gbest_cloud_matrix - A * D_cloud_matrix
-                            particle.fog_matrix = self.gbest_fog_matrix - A * D_fog_matrix
-                        else:
-                            random_agent_idx = np.random.randint(0, len(self.particles))
-                            random_particle = self.particles[random_agent_idx]
-                            D_cloud_matrix = np.abs(C * random_particle.cloud_matrix - particle.cloud_matrix)
-                            D_fog_matrix = np.abs(C * random_particle.fog_matrix - particle.fog_matrix)
-
-                            particle.cloud_matrix = random_particle.cloud_matrix - A * D_cloud_matrix
-                            particle.fog_matrix = random_particle.fog_matrix - A * D_fog_matrix
-                    else:
-                        D_cloud_matrix = np.abs(self.gbest_cloud_matrix - particle.cloud_matrix)
-                        D_fog_matrix = np.abs(self.gbest_fog_matrix - particle.fog_matrix)
-
-                        particle.cloud_matrix = D_cloud_matrix * np.exp(b * l) * np.cos(2 * np.pi * l) \
-                                                + self.gbest_cloud_matrix
-
-                        particle.fog_matrix = D_fog_matrix * np.exp(b * l) * np.cos(2 * np.pi * l) \
-                                              + self.gbest_fog_matrix
-
-                    # particle.fix_parameter_after_update()
-                    # particle.move()
-                fitness_arr.append(self.gbest_value)
-                training_history = 'Iteration {}, best fitness = {} with time = {}' \
-                    .format(epoch, fitness_arr[-1], round(time.time() - epoch_start_time, 4))
-                print(training_history)
-        else:
-            fitness_arr = []
-            start_time_run = time.time()
-            for epoch in range(self.epochs):
-                epoch_start_time = time.time()
-                self.set_gbest()
-                a = 2 * np.cos(epoch / (self.epochs - 1))
-
-                for particle in self.particles:
-
-                    r = np.random.rand()
-                    A = 2 * a * r - a
-                    C = 2 * r
-                    l = np.random.uniform(-1, 1)
-                    b = 1
-                    p = np.random.rand()
-
-                    if p < 0.5:
-                        if np.abs(A) < 1:
-                            D_cloud_matrix = np.abs(C * self.gbest_cloud_matrix - particle.cloud_matrix)
-                            D_fog_matrix = np.abs(C * self.gbest_fog_matrix - particle.fog_matrix)
-
-                            particle.cloud_matrix = self.gbest_cloud_matrix - A * D_cloud_matrix
-                            particle.fog_matrix = self.gbest_fog_matrix - A * D_fog_matrix
-                        else:
-                            random_agent_idx = np.random.randint(0, len(self.particles))
-                            random_particle = self.particles[random_agent_idx]
-                            D_cloud_matrix = np.abs(C * random_particle.cloud_matrix - particle.cloud_matrix)
-                            D_fog_matrix = np.abs(C * random_particle.fog_matrix - particle.fog_matrix)
-
-                            particle.cloud_matrix = random_particle.cloud_matrix - A * D_cloud_matrix
-                            particle.fog_matrix = random_particle.fog_matrix - A * D_fog_matrix
-                    else:
-                        D_cloud_matrix = np.abs(self.gbest_cloud_matrix - particle.cloud_matrix)
-                        D_fog_matrix = np.abs(self.gbest_fog_matrix - particle.fog_matrix)
-
-                        particle.cloud_matrix = D_cloud_matrix * np.exp(b * l) * np.cos(2 * np.pi * l) \
-                                                + self.gbest_cloud_matrix
-
-                        particle.fog_matrix = D_fog_matrix * np.exp(b * l) * np.cos(2 * np.pi * l) \
-                                              + self.gbest_fog_matrix
-
-                    # particle.fix_parameter_after_update()
-                    # particle.move()
-                fitness_arr.append(self.gbest_value)
-                training_history = 'Iteration {}, best fitness = {} with time = {}' \
-                    .format(epoch, fitness_arr[-1], round(time.time() - epoch_start_time, 4))
-                print(training_history)
-                if time.time() - start_time_run >= self.gbest_particle.time_scheduling:
-                    print('=== over time training ===')
-                    break
-        return self.gbest_particle.cloud_matrix, self.gbest_particle.fog_matrix, np.array(fitness_arr)
-
+            counter = 2 * self.pop_size  # pop_new + pop_mutation operations
+            return pop, counter
