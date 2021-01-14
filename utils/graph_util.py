@@ -14,29 +14,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import math
+import os
 
 from config import *
-
-
-def visualize_front(points):
-    from matplotlib import pyplot
-    from mpl_toolkits.mplot3d import Axes3D
-    import random
-
-    fig = pyplot.figure()
-    ax = Axes3D(fig)
-
-    # Generate the values
-    x_vals = points[:, 0:1]
-    y_vals = points[:, 1:2]
-    z_vals = points[:, 2:3]
-
-    ax.scatter(x_vals, y_vals, z_vals, c='b', marker='o')
-    ax.set_xlabel('X-axis')
-    ax.set_ylabel('Y-axis')
-    ax.set_zlabel('Z-axis')
-    pyplot.show()
-
 
 def visualize_mean_training_fitness():
     number_tasks = 150

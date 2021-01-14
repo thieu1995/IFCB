@@ -87,6 +87,7 @@ def inside_loop(my_model, n_trials, n_timebound):
                 save_experiment_result(problem, solution, my_model["name"], name_paras, results_folder_path)
 
 
+
 def setting_and_running(my_model):
     print(f'Start running: {my_model["name"]}')
     for n_trials in OptExp.N_TRIALS:

@@ -10,6 +10,11 @@
 from matplotlib import pyplot
 from mpl_toolkits.mplot3d import Axes3D
 from numpy import arange
+import platform
+
+if platform.system() == "Linux":  # Linux: "Linux", Mac: "Darwin", Windows: "Windows"
+    import matplotlib
+    matplotlib.use('Agg')  # Force matplotlib to not use any Xwindows backend.
 
 
 def visualize_front_3d(list_points: list, labels:list, names:list, list_color:list, list_marker:list,
@@ -42,7 +47,8 @@ def visualize_front_3d(list_points: list, labels:list, names:list, list_color:li
     ax.legend()
     for idx, ext in enumerate(exts):
         pyplot.savefig(pathsave[idx] + filename + ext, bbox_inches='tight')
-    pyplot.show()
+    if platform.system() != "Linux":
+        pyplot.show()
     pyplot.close()
 
 
@@ -63,7 +69,8 @@ def visualize_front_2d(list_points: list, labels: list, names:list, list_color: 
     pyplot.legend(loc='upper left')
     for idx, ext in enumerate(exts):
         pyplot.savefig(pathsave[idx] + filename + ext, bbox_inches='tight')
-    pyplot.show()
+    if platform.system() != "Linux":
+        pyplot.show()
     pyplot.close()
 
 
@@ -84,5 +91,7 @@ def visualize_front_1d(list_points: list, labels: list, names: list, list_color:
     pyplot.legend(loc='upper left')
     for idx, ext in enumerate(exts):
         pyplot.savefig(pathsave[idx] + filename + ext, bbox_inches='tight')
-    pyplot.show()
+    if platform.system() != "Linux":
+        pyplot.show()
     pyplot.close()
+
