@@ -16,7 +16,26 @@ import numpy as np
 import math
 
 from config import *
-from utils import *
+
+
+def visualize_front(points):
+    from matplotlib import pyplot
+    from mpl_toolkits.mplot3d import Axes3D
+    import random
+
+    fig = pyplot.figure()
+    ax = Axes3D(fig)
+
+    # Generate the values
+    x_vals = points[:, 0:1]
+    y_vals = points[:, 1:2]
+    z_vals = points[:, 2:3]
+
+    ax.scatter(x_vals, y_vals, z_vals, c='b', marker='o')
+    ax.set_xlabel('X-axis')
+    ax.set_ylabel('Y-axis')
+    ax.set_zlabel('Z-axis')
+    pyplot.show()
 
 
 def visualize_mean_training_fitness():
@@ -268,9 +287,9 @@ def visualize_mean_change_coeff_value(metrics, num_tasks):
     plt.savefig(f'test_coeff_{num_tasks}_{metrics}.pdf')
 
 
-if __name__ == "__main__":
-    # visulize_mean_trade_off_value()
-    visualize_mean_training_fitness()
+# if __name__ == "__main__":
+#     # visulize_mean_trade_off_value()
+#     visualize_mean_training_fitness()
 
     # metrics = ['Alpha', 'Beta', 'Alpha, Beta']
     # num_tasks = [150]
