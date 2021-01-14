@@ -69,7 +69,7 @@ class Root:
         return where(logical_and(self.domain_range[0] <= position, position <= self.domain_range[1]),
                      position, uniform(self.domain_range[0], self.domain_range[1]))
 
-    def evolve(self, pop, fe_mode=None, epoch=None, g_best=None):
+    def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
         pass
 
     def train(self):

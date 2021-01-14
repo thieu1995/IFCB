@@ -39,7 +39,7 @@ class Config:
     # 1. Pareto-front
 
     ## finally: metrics = ["power", "latency", "cost", "weighting", "distancing", "min-max", "weighting-min", "pareto",...]
-    METRICS = 'power'
+    METRICS = 'pareto'
     OBJ_WEIGHTING_METRICS = [0.2, 0.3, 0.5]
     OBJ_DISTANCING_METRICS = [800, 40000, 500]  ## DEMAND-LEVEL REQUIREMENT
     OBJ_MINMAX_METRICS = [800, 40000, 500]
@@ -100,6 +100,6 @@ class OptExp:       # Optimizer paras in experiments
     TIME_BOUND_VALUES = [60, 100]
     POP_SIZE = [100]
     DOMAIN_RANGE = [[-1, 1]]
-    EPOCH = [10]
+    EPOCH = [3]
     FE = [100000]
 

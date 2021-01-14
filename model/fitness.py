@@ -76,6 +76,8 @@ class Fitness:
             o = array(Config.OBJ_WEIGHTING_MIN_METRICS_2)
             v = array([power, latency, cost])
             return sum((w * o) / v)
+        elif Config.METRICS == "pareto":
+            return array([power, latency, cost])
         else:
             print(f'[ERROR] Metrics {Config.METRICS} is not supported in class FitnessManager')
 
