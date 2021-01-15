@@ -14,7 +14,7 @@ from pandas import DataFrame
 import pickle as pkl
 from numpy import insert, array, concatenate
 
-from config import Config
+from config import Config, OptExp
 from optimizer import BaseNSGA_II
 from utils.io_util import load_tasks, load_nodes
 from utils.visual.scatter import visualize_front_3d, visualize_front_2d, visualize_front_1d
@@ -84,27 +84,43 @@ def save_visualization(problem, solution, name_mha, name_paras, results_folder_p
                        ["red"], ["o"], fn_1d_M, [path_png, path_pdf], [".png", ".pdf"])
 
 
-def optimize_schedule_with_nsgaii(item):
-    pop_size = item['pop_size']
-    epoch = item['epoch']
-    func_eval = item["func_eval"]
-    time_bound = item["time_bound"]
-    domain_range = item["domain_range"]
-    number_tasks = item["number_tasks"]
-    Path(f'{Config.RESULTS_DATA}_{time_bound}').mkdir(parents=True, exist_ok=True)
-    tasks = load_tasks(f'{Config.INPUT_DATA}/tasks_{number_tasks}.json')
-    problem = deepcopy(item['problem'])
+def inside_loop(my_model, n_trials, n_timebound):
+    Path(f'{Config.RESULTS_DATA}_{n_trials}').mkdir(parents=True, exist_ok=True)
+    tasks = load_tasks(f'{Config.INPUT_DATA}/tasks_{my_model["n_tasks"]}.json')
+    problem = deepcopy(my_model['problem'])
     problem["tasks"] = tasks
-    optimizer = BaseNSGA_II(problem, pop_size, epoch, func_eval, time_bound, domain_range)
-    solutions, g_best, g_best_dict = optimizer.train()
-    name_mha = 'nsgaii'
-    name_paras = f'{epoch}_{pop_size}'
-    results_folder_path = f'{Config.RESULTS_DATA}_{time_bound}/{Config.METRICS}/'
+    problem["n_tasks"] = my_model["n_tasks"]
+    problem["shape"] = [len(problem["clouds"]) + len(problem["fogs"]), my_model["n_tasks"]]
+
+    # for paras in parameters_grid:
+    if Config.MODE == "epoch":
+        optimizer = BaseNSGA_II(problem, my_model["pop_size"], my_model["epoch"], my_model["func_eval"], my_model["lb"], my_model["ub"], paras=None)
+        solutions, g_best, g_best_dict = optimizer.train()
+    elif Config.MODE == "fe":
+        optimizer = BaseNSGA_II(problem, my_model["pop_size"], my_model["epoch"], my_model["func_eval"], my_model["lb"], my_model["ub"], paras=None)
+        solutions, g_best, g_best_dict = optimizer.train()
+
+    if Config.TIME_BOUND_KEY:
+        results_folder_path = f'{Config.RESULTS_DATA}_{n_timebound}s/{Config.METRICS}/'
+    else:
+        results_folder_path = f'{Config.RESULTS_DATA}_no_time_bound/{Config.METRICS}/'
     Path(results_folder_path).mkdir(parents=True, exist_ok=True)
+    name_mha = 'nsgaii'
+    name_paras = f'{my_model["epoch"]}_{my_model["pop_size"]}'
 
     save_training_fitness_information(g_best_dict, len(tasks), name_mha, name_paras, results_folder_path)
     save_experiment_result(problem, solutions, g_best, name_mha, name_paras, results_folder_path)
     save_visualization(problem, g_best, name_mha, name_paras, results_folder_path)
+
+
+def optimize_schedule_with_nsgaii(my_model):
+    print(f'Start running: {my_model["optimizer"]}')
+    for n_trials in OptExp.N_TRIALS:
+        if Config.TIME_BOUND_KEY:
+            for n_timebound in OptExp.TIME_BOUND_VALUES:
+                inside_loop(my_model, n_trials, n_timebound)
+        else:
+            inside_loop(my_model, n_trials, None)
 
 
 if __name__ == "__main__":
@@ -112,16 +128,19 @@ if __name__ == "__main__":
     problem = {
         "clouds": clouds,
         "fogs": fogs,
-        "peers": peers
+        "peers": peers,
+        "n_clouds": len(clouds),
+        "n_fogs": len(fogs),
+        "n_peers": len(peers),
     }
     param_grid = {
-        'number_tasks': [100],  # list(range(150, 201, 50))
+        'n_tasks': [100],  # list(range(150, 201, 50))
         'pop_size': [50],  # [100]
         'epoch': [2],  # [200]
         'func_eval': [100000],
-        'time_bound': [30],  # list(range(0, 10, 1))
-        'domain_range': [[-1, 1]],
-        'optimizer': ['ga'],
+        'lb': [-1],
+        'ub': [1],
+        'optimizer': ['NSGA-II'],
         'problem': [problem]
     }
     for item in list(ParameterGrid(param_grid)):

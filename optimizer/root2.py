@@ -14,6 +14,7 @@ from optimizer.root import Root
 from numpy import array, inf, zeros, argmin
 from numpy.random import uniform
 from utils.schedule_util import matrix_to_schedule
+from uuid import uuid4
 
 
 class Root2(Root):
@@ -30,8 +31,9 @@ class Root2(Root):
             schedule = matrix_to_schedule(self.problem, matrix)
             if schedule.is_valid():
                 fitness = self.Fit.fitness(schedule)
+                idx = uuid4().hex
                 break
-        return [matrix, fitness]  # [solution, fit]
+        return [idx, matrix, fitness]
 
     # Function to sort by values
     def sort_by_values(self, front: list, obj_list: array):
