@@ -11,30 +11,12 @@ from time import time
 from config import Config
 from sys import exit
 from optimizer.root import Root
-from numpy import array, inf, zeros, argmin, ndarray
-from numpy.random import uniform
-from utils.schedule_util import matrix_to_schedule
-from uuid import uuid4
+from numpy import array, inf, zeros, argmin
 
 
 class Root2(Root):
-    ID_IDX = 0
-    ID_POS = 1
-    ID_FIT = 2
-
-    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, time_bound=None, domain_range=None):
-        super().__init__(problem, pop_size, epoch, func_eval, time_bound, domain_range)
-
-    def create_solution(self):
-        while True:
-            matrix_cloud = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem["tasks"]), len(self.problem["clouds"])))
-            matrix_fog = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem["tasks"]), len(self.problem["fogs"])))
-            schedule = matrix_to_schedule(self.problem, [matrix_cloud, matrix_fog])
-            if schedule.is_valid():
-                fitness = self.Fit.fitness(schedule)
-                idx = uuid4().hex
-                break
-        return [idx, [matrix_cloud, matrix_fog], fitness]  # [idx, solution, fit]
+    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None):
+        super().__init__(problem, pop_size, epoch, func_eval, lb, ub)
 
     # Function to sort by values
     def sort_by_values(self, front: list, obj_list: array):
@@ -128,8 +110,8 @@ class Root2(Root):
 
         time_bound_start = time()
         time_bound_log = "without time-bound."
-        if Config.TIME_BOUND:
-            time_bound_log = f'with time-bound: {self.time_bound} seconds.'
+        if Config.TIME_BOUND_KEY:
+            time_bound_log = f'with time-bound: {Config.TIME_BOUND_VALUE} seconds.'
         if Config.MODE == 'epoch':
             print(f'Training by: epoch (mode) with: {self.epoch} epochs, {time_bound_log}')
             g_best_dict = {}
@@ -145,8 +127,8 @@ class Root2(Root):
                 time_epoch_end = time() - time_epoch_start
                 print(f'Front size: {len(front[0])}, including {list(pop.values())[front[0][0]][self.ID_FIT]}, '
                       f'Epoch {epoch + 1} with time: {time_epoch_end:.2f} seconds')
-                if Config.TIME_BOUND:
-                    if time() - time_bound_start >= self.time_bound:
+                if Config.TIME_BOUND_KEY:
+                    if time() - time_bound_start >= Config.TIME_BOUND_VALUE:
                         print('====== Over time for training ======')
                         break
             solutions = {}

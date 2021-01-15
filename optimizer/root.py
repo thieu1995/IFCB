@@ -15,30 +15,32 @@ from config import Config
 from model.fitness import Fitness
 from utils.schedule_util import matrix_to_schedule
 from sys import exit
+from uuid import uuid4
 
 
 class Root:
-    ID_POS = 0
-    ID_FIT = 1
+    ID_IDX = 0
+    ID_POS = 1
+    ID_FIT = 2
 
-    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, time_bound=None, domain_range=None):
+    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None):
         self.problem = problem
         self.pop_size = pop_size
         self.epoch = epoch
         self.func_eval = func_eval
-        self.time_bound = time_bound
-        self.domain_range = domain_range
+        self.lb = lb
+        self.ub = ub
         self.Fit = Fitness(problem)
 
     def create_solution(self):
         while True:
-            matrix_cloud = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem["tasks"]), len(self.problem["clouds"])))
-            matrix_fog = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem["tasks"]), len(self.problem["fogs"])))
-            schedule = matrix_to_schedule(self.problem, [matrix_cloud, matrix_fog])
+            matrix = uniform(self.lb, self.ub, self.problem["shape"])
+            schedule = matrix_to_schedule(self.problem, matrix)
             if schedule.is_valid():
                 fitness = self.Fit.fitness(schedule)
+                idx = uuid4().hex
                 break
-        return [[matrix_cloud, matrix_fog], fitness]        # [solution, fit]
+        return [idx, matrix, fitness]        # [idx, solution, fit]
 
     def early_stopping(self, array, patience=5):
         if patience <= len(array) - 1:
@@ -66,8 +68,7 @@ class Root:
                 return idx
 
     def amend_position_random(self, position=None):
-        return where(logical_and(self.domain_range[0] <= position, position <= self.domain_range[1]),
-                     position, uniform(self.domain_range[0], self.domain_range[1]))
+        return where(logical_and(self.lb <= position, position <= self.ub), position, uniform(self.lb, self.ub))
 
     def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
         pass
@@ -85,8 +86,8 @@ class Root:
         g_best_list = [g_best[self.ID_FIT]]
         time_bound_start = time()
         time_bound_log = "without time-bound."
-        if Config.TIME_BOUND:
-            time_bound_log = f'with time-bound: {self.time_bound} seconds.'
+        if Config.TIME_BOUND_KEY:
+            time_bound_log = f'with time-bound: {Config.TIME_BOUND_VALUE} seconds.'
         if Config.MODE == 'epoch':
             print(f'Training by: epoch (mode) with: {self.epoch} epochs, {time_bound_log}')
             for epoch in range(self.epoch):
@@ -105,8 +106,8 @@ class Root:
                 print(f'Current best fit {current_best[self.ID_FIT]:.4f}, '
                       f'Global best fit {g_best[self.ID_FIT]:.4f}, '
                       f'Epoch {epoch + 1} with time: {time_epoch_end:.2f} seconds')
-                if Config.TIME_BOUND:
-                    if time() - time_bound_start >= self.time_bound:
+                if Config.TIME_BOUND_KEY:
+                    if time() - time_bound_start >= Config.TIME_BOUND_VALUE:
                         print('====== Over time for training ======')
                         break
             return g_best[0], g_best[1], array(g_best_list)
@@ -130,8 +131,8 @@ class Root:
                 print(f'Current best fit {current_best[self.ID_FIT]:.4f}, '
                       f'Global best fit {g_best[self.ID_FIT]:.4f}, '
                       f'FE {fe_counter} with time: {time_fe_end:.2f} seconds')
-                if Config.TIME_BOUND:
-                    if time() - time_bound_start >= self.time_bound:
+                if Config.TIME_BOUND_KEY:
+                    if time() - time_bound_start >= Config.TIME_BOUND_VALUE:
                         print('====== Over time for training ======')
                         break
             return g_best[0], g_best[1], array(g_best_list)
