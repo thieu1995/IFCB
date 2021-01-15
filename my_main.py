@@ -20,6 +20,7 @@ from config import Config, OptParas, OptExp
 from model.fitness import Fitness
 from utils.io_util import load_tasks, load_nodes
 from utils.schedule_util import matrix_to_schedule
+from utils.visual.bar import bar_chart_2d
 import optimizer
 
 
@@ -51,6 +52,30 @@ def save_experiment_result(problem, solution, name_mha, name_paras, results_fold
     schedule_object_save_path = open(f'{file_name}.pickle', 'wb')
     pkl.dump(schedule, schedule_object_save_path)
     schedule_object_save_path.close()
+
+
+def save_visualization(problem, solution, best_fit, name_model, name_paras, results_folder_path):
+    path_png = f'{results_folder_path}/visualization/{name_model}/{name_paras}/png'
+    path_pdf = f'{results_folder_path}/visualization/{name_model}/{name_paras}/pdf'
+    Path(path_png).mkdir(parents=True, exist_ok=True)
+    Path(path_pdf).mkdir(parents=True, exist_ok=True)
+
+    fit_obj = Fitness(problem)
+    schedule = matrix_to_schedule(problem, solution)
+    power = fit_obj.calc_power_consumption(schedule)
+    latency = fit_obj.calc_latency(schedule)
+    cost = fit_obj.calc_cost(schedule)
+
+    fn_3d = f'/{len(problem["tasks"])}_tasks-3d'
+    fn_2d_power = f'/{len(problem["tasks"])}_tasks-2d-power'
+    fn_2d_latency = f'/{len(problem["tasks"])}_tasks-2d-latency'
+    fn_2d_cost = f'/{len(problem["tasks"])}_tasks-2d-cost'
+    fn_2d_fit = f'/{len(problem["tasks"])}_tasks-2d-fit'
+
+    bar_chart_2d([best_fit], [f'fitness: {Config.METRICS}'], [name_model], ["red"], fn_2d_fit, [path_png, path_pdf], [".png", ".pdf"])
+    bar_chart_2d([power], [f'Power Consumption'], [name_model], ["red"], fn_2d_power, [path_png, path_pdf], [".png", ".pdf"])
+    bar_chart_2d([latency], [f'Service Latency'], [name_model], ["red"], fn_2d_latency, [path_png, path_pdf], [".png", ".pdf"])
+    bar_chart_2d([cost], [f'Monetary Cost'], [name_model], ["red"], fn_2d_cost, [path_png, path_pdf], [".png", ".pdf"])
 
 
 def inside_loop(my_model, n_trials, n_timebound):
@@ -85,7 +110,7 @@ def inside_loop(my_model, n_trials, n_timebound):
 
                 save_training_fitness_information(best_fit_list, len(tasks), my_model["name"], name_paras, results_folder_path)
                 save_experiment_result(problem, solution, my_model["name"], name_paras, results_folder_path)
-
+                save_visualization(problem, solution, best_fit, my_model["name"], name_paras, results_folder_path)
 
 
 def setting_and_running(my_model):

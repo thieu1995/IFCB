@@ -32,9 +32,6 @@ def visualize_front_3d(list_points: list, labels:list, names:list, list_color:li
         z_vals = points[:, 2:3]
 
         ax.scatter(x_vals, y_vals, z_vals, c=list_color[0], marker=list_marker[0], label=names[0])
-        ax.set_xlabel(labels[0])
-        ax.set_ylabel(labels[1])
-        ax.set_zlabel(labels[2])
     else:
         for idx, points in enumerate(list_points):
             xs = points[:, 0:1]
