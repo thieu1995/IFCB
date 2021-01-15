@@ -63,7 +63,7 @@ class BaseEO(Root):
                     g = g0 * f  # Eq. 13
                     temp = c_eq[j] + (pop[i][self.ID_POS][j] - c_eq[j]) * f + (g * self.V / lamda) * (1.0 - f)  # Eq. 16
                     temp = self.amend_position_random(temp)
-                    child.append(temp)
+                    child[j] = temp
                 schedule = matrix_to_schedule(self.problem, child)
                 if schedule.is_valid():
                     fit = self.Fit.fitness(schedule)
