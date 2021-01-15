@@ -7,9 +7,10 @@
 #       Github:     https://github.com/thieu1995                                                        %
 # ------------------------------------------------------------------------------------------------------%
 
+from copy import deepcopy
 from config import Config
 from optimizer.root import Root
-from numpy.random import uniform, random
+from numpy.random import uniform
 from utils.schedule_util import matrix_to_schedule
 
 
@@ -23,16 +24,20 @@ class BaseGA(Root):
         self.p_m = paras["p_m"]
 
     def crossover(self, dad, mom):
-        r = random()
-        child = []
-        if r < self.p_c:
-            while True:
-                matrix = uniform(self.lb, self.ub, self.problem["shape"])
-                schedule = matrix_to_schedule(self.problem, matrix)
-                if schedule.is_valid():
-                    fitness = self.Fit.fitness(schedule)
-                    break
-            return [child, fitness]  # [solution, fit]
+        if uniform() < self.p_c:
+            child = (dad[self.ID_POS] + mom[self.ID_POS]) / 2
+            schedule = matrix_to_schedule(self.problem, child)
+            if schedule.is_valid():
+                fitness = self.Fit.fitness(schedule)
+            else:
+                while True:
+                    coef = uniform(0, 1)
+                    child = coef*dad[self.ID_POS] + (1-coef)*mom[self.ID_POS]
+                    schedule = matrix_to_schedule(self.problem, child)
+                    if schedule.is_valid():
+                        fitness = self.Fit.fitness(schedule)
+                        break
+            return [child, fitness]
         else:
             if Config.METRICS in Config.METRICS_MAX:
                 return mom if dad[self.ID_FIT] < mom[self.ID_FIT] else dad
@@ -56,14 +61,12 @@ class BaseGA(Root):
     def mutate(self, pop):
         for i in range(self.pop_size):
             while True:
-                child = []
-                for j in range(len(pop[i][self.ID_POS])):
-                    sol_part_temp = pop[i][self.ID_POS][j]
-                    for k_row in range(sol_part_temp.shape[0]):
-                        for k_col in range(sol_part_temp.shape[1]):
-                            if uniform() < self.p_m:
-                                sol_part_temp[k_row][k_col] = uniform(self.domain_range[0], self.domain_range[1])
-                    child.append(sol_part_temp)
+                child = deepcopy(pop[i][self.ID_POS])
+                rd_matrix = uniform(self.lb, self.ub, self.problem["shape"])
+                child[rd_matrix < self.p_m] = 0
+                rd_matrix_new = uniform(self.lb, self.ub, self.problem["shape"])
+                rd_matrix_new[rd_matrix >= self.p_m] = 0
+                child = child + rd_matrix_new
                 schedule = matrix_to_schedule(self.problem, child)
                 if schedule.is_valid():
                     fitness = self.Fit.fitness(schedule)

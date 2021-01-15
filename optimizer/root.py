@@ -15,12 +15,11 @@ from config import Config
 from model.fitness import Fitness
 from utils.schedule_util import matrix_to_schedule
 from sys import exit
-from uuid import uuid4
 
 
 class Root:
-    ID_POS = 1
-    ID_FIT = 2
+    ID_POS = 0
+    ID_FIT = 1
 
     def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None):
         self.problem = problem
