@@ -96,6 +96,11 @@ class OptParas:     # Optimizer parameters config
     AEO = {             # This algorithm has no actually parameters
         "No": [None]
     }
+    SSA = {
+        "ST": [0.8],    # ST in [0.5, 1.0]
+        "PD": [0.2],    # number of producers
+        "SD": [0.1]     # number of sparrows who perceive the danger
+    }
 
 
 class OptExp:       # Optimizer paras in experiments
