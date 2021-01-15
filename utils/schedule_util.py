@@ -91,25 +91,3 @@ def matrix_to_schedule(problem:dict, solution: ndarray) -> Schedule:
     schedule.schedule_peers_tasks = peer_tasks
     return schedule
 
-
-# clouds, fogs = load_cloudlets('data/cloudlet_5_20.json')
-# tasks = load_tasks('data/tasks_1000.json')
-#
-# fog_cloud_paths = np.array([fog.idle_cl_gamma for fog in fogs]) != float('inf')
-
-
-# if __name__ == '__main__':
-#     clouds, fogs = load_cloudlets('../data/input_data/cloudlet_2_5.json')
-#     tasks = load_tasks('../data/input_data/tasks_10.json')
-#
-#     fog_cloud_paths = array([fog.idle_cl_gamma for fog in fogs]) != float('inf')
-#
-#     cloud_matrix = uniform(-1, 1, (len(tasks), len(clouds)))
-#     fog_matrix = uniform(-1, 1, (len(tasks), len(fogs)))
-#
-#     schedule = matrix_to_schedule(cloud_matrix, fog_matrix, fog_cloud_paths)
-#     print(schedule)
-#     print(fog_cloud_paths)
-#     print(schedule.is_valid())
-#
-

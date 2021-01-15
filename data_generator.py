@@ -12,7 +12,7 @@ from numpy import ceil
 from model.fog import Fog
 from model.cloud import Cloud
 from model.task import Task
-from model.blockchain.node import Node
+from model.blockchain.peer import Peer
 from utils.io_util import dump_tasks, dump_nodes
 from config import DefaultData
 
@@ -85,7 +85,7 @@ def create_fog_node(name, location):
 
 
 def create_blockchain_node(name, location):
-    node = Node(name, location)
+    node = Peer(name, location)
 
     node.alpha = uniform(5e-10, 5e-9)       # power consumption - data forwarding
     node.gamma = uniform(5e-10, 5e-8)       # power consumption - storage
@@ -115,7 +115,7 @@ if __name__ == '__main__':
 
     clouds = []
     for idx in range(number_clouds):
-        name = "Cloud Node: " + str(idx)
+        name = "Cloud Peer: " + str(idx)
         location = {
             "long": uniform(DefaultData.LOC_LONG_BOUND[0], DefaultData.LOC_LONG_BOUND[1]),
             "lat": uniform(DefaultData.LOC_LAT_BOUND[0], DefaultData.LOC_LAT_BOUND[1]),
@@ -124,7 +124,7 @@ if __name__ == '__main__':
 
     fogs = []
     for idx in range(number_fogs):
-        name = "Fog Node: " + str(idx)
+        name = "Fog Peer: " + str(idx)
         location = {
             "long": uniform(DefaultData.LOC_LONG_BOUND[0], DefaultData.LOC_LONG_BOUND[1]),
             "lat": uniform(DefaultData.LOC_LAT_BOUND[0], DefaultData.LOC_LAT_BOUND[1]),
@@ -133,7 +133,7 @@ if __name__ == '__main__':
 
     peers = []
     for idx in range(number_peers):
-        name = "Peer Node: " + str(idx)
+        name = "Peer Peer: " + str(idx)
         location = {
             "long": uniform(DefaultData.LOC_LONG_BOUND[0], DefaultData.LOC_LONG_BOUND[1]),
             "lat": uniform(DefaultData.LOC_LAT_BOUND[0], DefaultData.LOC_LAT_BOUND[1]),

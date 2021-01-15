@@ -14,7 +14,7 @@ from typing import List, Tuple
 from model.cloud import Cloud
 from model.fog import Fog
 from model.task import Task
-from model.blockchain.node import Node
+from model.blockchain.peer import Peer
 
 from config import Config
 
@@ -29,7 +29,7 @@ def dump_tasks(tasks: List[Task]) -> None:
         json.dump(tasks, outfile, indent=4)
 
 
-def dump_nodes(clouds: List[Cloud], fogs: List[Fog], peers: List[Node]) -> None:
+def dump_nodes(clouds: List[Cloud], fogs: List[Fog], peers: List[Peer]) -> None:
     data = {
         'fogs': [f.to_dict() for f in fogs],
         'clouds': [c.to_dict() for c in clouds],
@@ -55,7 +55,7 @@ def load_tasks(filename: str) -> List[Task]:
         return tasks
 
 
-def load_nodes(filename: str) -> Tuple[List[Cloud], List[Fog], List[Node]]:
+def load_nodes(filename: str) -> Tuple[List[Cloud], List[Fog], List[Peer]]:
     clouds = []
     fogs = []
     peers = []
@@ -75,7 +75,7 @@ def load_nodes(filename: str) -> Tuple[List[Cloud], List[Fog], List[Node]]:
                 setattr(fog, key, value)
             fogs.append(fog)
         for row in peer_data:
-            peer = Node()
+            peer = Peer()
             for key, value in row.items():
                 setattr(peer, key, value)
             peers.append(peer)
