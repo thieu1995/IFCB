@@ -15,8 +15,8 @@ from utils.schedule_util import matrix_to_schedule
 
 class BaseWOA(Root):
 
-    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, time_bound=None, domain_range=None, paras=None):
-        super().__init__(problem, pop_size, epoch, func_eval, time_bound, domain_range)
+    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, paras=None):
+        super().__init__(problem, pop_size, epoch, func_eval, lb, ub)
         if paras is None:
             paras = {"p": 0.5, "b": 1.0}
         self.p = paras["p"]
@@ -33,32 +33,23 @@ class BaseWOA(Root):
             if uniform() < self.p:
                 if abs(A) < 1:
                     while True:
-                        child = []
-                        for j in range(len(pop[i][self.ID_POS])):
-                            D = g_best[self.ID_POS][j] - A * abs(C * g_best[self.ID_POS][j] - pop[i][self.ID_POS][j])
-                            child.append(D)
+                        child = g_best[self.ID_POS] - A * abs(C * g_best[self.ID_POS] - pop[i][self.ID_POS])
                         schedule = matrix_to_schedule(self.problem, child)
                         if schedule.is_valid():
                             fitness = self.Fit.fitness(schedule)
                             break
                 else:
                     while True:
-                        child = []
                         id_rand = choice(list(set(range(0, self.pop_size)) - {i}))   # select random 1 position in pop
-                        for j in range(len(pop[i][self.ID_POS])):
-                            D = pop[id_rand][self.ID_POS][j] - A * abs(C * pop[id_rand][self.ID_POS][j] - pop[i][self.ID_POS][j])
-                            child.append(D)
+                        child = pop[id_rand][self.ID_POS] - A * abs(C * pop[id_rand][self.ID_POS] - pop[i][self.ID_POS])
                         schedule = matrix_to_schedule(self.problem, child)
                         if schedule.is_valid():
                             fitness = self.Fit.fitness(schedule)
                             break
             else:
                 while True:
-                    child = []
-                    for j in range(len(pop[i][self.ID_POS])):
-                        D1 = abs(g_best[self.ID_POS][j] - pop[i][self.ID_POS][j])
-                        D = D1 * exp(self.b * l) * cos(2 * pi * l) + g_best[self.ID_POS][j]
-                        child.append(D)
+                    D1 = abs(g_best[self.ID_POS] - pop[i][self.ID_POS])
+                    child = D1 * exp(self.b * l) * cos(2 * pi * l) + g_best[self.ID_POS]
                     schedule = matrix_to_schedule(self.problem, child)
                     if schedule.is_valid():
                         fitness = self.Fit.fitness(schedule)
