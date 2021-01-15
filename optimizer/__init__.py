@@ -11,4 +11,5 @@ from .GA import BaseGA
 from .PSO import BasePSO
 from .WOA import BaseWOA
 from .EO import BaseEO
+from .AEO import BaseAEO
 from .NSGA_II import BaseNSGA_II

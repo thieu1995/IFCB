@@ -93,6 +93,9 @@ class OptParas:     # Optimizer parameters config
         "a2": [1.0],
         "GP": [0.5]
     }
+    AEO = {             # This algorithm has no actually parameters
+        "No": [None]
+    }
 
 
 class OptExp:       # Optimizer paras in experiments

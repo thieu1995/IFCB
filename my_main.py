@@ -141,7 +141,8 @@ if __name__ == '__main__':
         # {"name": "BaseGA", "param_grid": OptParas.GA, "problem": problem},
         # {"name": "BasePSO", "param_grid": OptParas.PSO, "problem": problem},
         # {"name": "BaseWOA", "param_grid": OptParas.WOA, "problem": problem},
-        {"name": "BaseEO", "param_grid": OptParas.EO, "problem": problem},
+        # {"name": "BaseEO", "param_grid": OptParas.EO, "problem": problem},
+        {"name": "BaseAEO", "param_grid": OptParas.AEO, "problem": problem},
     ]
 
     processes = []
