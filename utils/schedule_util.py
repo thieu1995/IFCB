@@ -19,14 +19,13 @@ def make_dict_from_list_object(list_obj):
     return my_dict
 
 
-def matrix_to_schedule(problem, solution: list):
+def matrix_to_schedule(problem:dict, solution: ndarray) -> Schedule:
     """
     Convert matrix data to schedule object
     :param solution:
-        [ n_task x n_cloud, n_task x n_fog ]
+        [ n_clouds + n_fogs, t_tasks ]
     :return: Schedule obj or None
     """
-    matrix_cloud, matrix_fog = solution[0], solution[1]
     clouds = problem["clouds"]
     fogs = problem["fogs"]
     tasks = problem["tasks"]
@@ -35,13 +34,16 @@ def matrix_to_schedule(problem, solution: list):
     clouds_dict = make_dict_from_list_object(clouds)
     tasks_dict = make_dict_from_list_object(tasks)
 
-    n_clouds = len(clouds)
-    n_fogs = len(fogs)
-    n_tasks = len(tasks)
+    n_clouds = problem["n_clouds"]
+    n_fogs = problem["n_fogs"]
+    n_tasks = problem["n_tasks"]
+    n_peers = problem["n_peers"]
+
     schedule = Schedule(problem)
+    matrix_cloud, matrix_fog = solution[:n_clouds,], solution[n_clouds:,]
 
     # convert matrix_cloud to schedule.schedule_clouds_tasks
-    list_task_stt = argmin(matrix_cloud, axis=1)  # List of [task-stt: cloud-stt] (not task_id)
+    list_task_stt = argmin(matrix_cloud, axis=0)  # List of [task-stt: cloud-stt] (not task_id)
     for cl_stt in range(n_clouds):
         list_task_id = []
         for task_stt, cloud_stt in enumerate(list_task_stt):
@@ -50,7 +52,7 @@ def matrix_to_schedule(problem, solution: list):
         schedule.schedule_clouds_tasks[clouds[cl_stt].id] = list_task_id
 
     # convert matrix_fog to schedule.schedule_flogs_tasks
-    list_task_stt = argmin(matrix_fog, axis=1)
+    list_task_stt = argmin(matrix_fog, axis=0)
     for fg_stt in range(n_fogs):
         list_task_id = []
         for task_stt, fog_stt in enumerate(list_task_stt):
@@ -77,7 +79,7 @@ def matrix_to_schedule(problem, solution: list):
     task_peers_important = {}
     for task_id, peers in task_peers.items():
         if tasks_dict[task_id].label == DefaultData.TASK_LABEL_IMPORTANT:
-            task_peers_important[task_id] = task_peers[task_id]
+            task_peers_important[task_id] = peers
     ###
     peer_tasks = {}
     for task_id, list_peer_id in task_peers_important.items():

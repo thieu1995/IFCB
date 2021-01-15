@@ -9,15 +9,6 @@
 
 from itertools import chain
 from copy import deepcopy
-from numpy import ndarray
-from numpy.random import uniform
-from typing import List
-
-from model import formulas
-from model.cloud import Cloud
-from model.fog import Fog
-from model.blockchain.node import Node
-from model.task import Task
 
 
 class Schedule:
@@ -42,18 +33,6 @@ class Schedule:
         self.schedule_clouds_tasks = {} # key: cloud_id, val: list_task_id []
         self.schedule_fogs_tasks = {}
         self.schedule_peers_tasks = {}
-
-        # [
-        #     {
-        #         "cloud_id": 1,
-        #         "list_task_id": [1, 2, 3, 4],
-        #     },
-        #     {
-        #         "cloud_id": 2,
-        #         "list_task_id": [5, 7],
-        #     }
-        # ]
-
 
     def get_list_task_handlers(self):
         task_handlers = {
@@ -82,7 +61,7 @@ class Schedule:
 
         ## 1. Total tasks in fogs = total tasks in clouds = total tasks
         tasks_temp = [task_id for task_id in self.schedule_clouds_tasks.values()]
-        tasks = list(chain(*tasks_temp))
+        tasks = list(chain(*tasks_temp))        ## Kinda same as set(list) to remove duplicate element
         if len(set(tasks)) != self.n_tasks:
             return False
 

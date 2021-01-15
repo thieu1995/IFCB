@@ -17,7 +17,8 @@ class Config:
     INPUT_DATA = f'{CORE_DATA_DIR}/input_data'
     RESULTS_DATA = f'{CORE_DATA_DIR}/final_results'
     MODE = 'epoch'  # epoch, fe (function evaluation counter instead of epoch)
-    TIME_BOUND = False  # time bound for the training process
+    TIME_BOUND_KEY = False  # time bound for the training process
+    TIME_BOUND_VALUE = 100
 
     METRICS_MAX = ["weighting-min", ]           # other methods need min - for calculate the global best fitness
     METRICS_NEED_MIN_OBJECTIVE_VALUES = False   # For tunning all parameter to find the min-objective value of each objective.
@@ -99,7 +100,8 @@ class OptExp:       # Optimizer paras in experiments
     N_TASKS = [100]
     TIME_BOUND_VALUES = [60, 100]
     POP_SIZE = [100]
-    DOMAIN_RANGE = [[-1, 1]]
+    LB = [-1]
+    UB = [1]
     EPOCH = [3]
     FE = [100000]
 
