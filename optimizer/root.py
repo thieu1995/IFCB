@@ -19,7 +19,6 @@ from uuid import uuid4
 
 
 class Root:
-    ID_IDX = 0
     ID_POS = 1
     ID_FIT = 2
 
@@ -38,9 +37,8 @@ class Root:
             schedule = matrix_to_schedule(self.problem, matrix)
             if schedule.is_valid():
                 fitness = self.Fit.fitness(schedule)
-                idx = uuid4().hex
                 break
-        return [idx, matrix, fitness]        # [idx, solution, fit]
+        return [matrix, fitness]        # [solution, fit]
 
     def early_stopping(self, array, patience=5):
         if patience <= len(array) - 1:

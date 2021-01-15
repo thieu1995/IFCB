@@ -15,8 +15,8 @@ from utils.schedule_util import matrix_to_schedule
 
 class BaseGA(Root):
 
-    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, time_bound=None, domain_range=None, paras=None):
-        super().__init__(problem, pop_size, epoch, func_eval, time_bound, domain_range)
+    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, paras=None):
+        super().__init__(problem, pop_size, epoch, func_eval, lb, ub)
         if paras is None:
             paras = {"p_c": 0.9, "p_m": 0.05}
         self.p_c = paras["p_c"]
@@ -27,9 +27,8 @@ class BaseGA(Root):
         child = []
         if r < self.p_c:
             while True:
-                for i in range(len(dad[self.ID_POS])):
-                    child.append((dad[self.ID_POS][i] + mom[self.ID_POS][i]) / 2)
-                schedule = matrix_to_schedule(self.problem, child)
+                matrix = uniform(self.lb, self.ub, self.problem["shape"])
+                schedule = matrix_to_schedule(self.problem, matrix)
                 if schedule.is_valid():
                     fitness = self.Fit.fitness(schedule)
                     break

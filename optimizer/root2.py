@@ -12,11 +12,26 @@ from config import Config
 from sys import exit
 from optimizer.root import Root
 from numpy import array, inf, zeros, argmin
+from numpy.random import uniform
+from utils.schedule_util import matrix_to_schedule
 
 
 class Root2(Root):
+    ID_IDX = 0
+    ID_POS = 1
+    ID_FIT = 2
+
     def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None):
         super().__init__(problem, pop_size, epoch, func_eval, lb, ub)
+
+    def create_solution(self):
+        while True:
+            matrix = uniform(self.lb, self.ub, self.problem["shape"])
+            schedule = matrix_to_schedule(self.problem, matrix)
+            if schedule.is_valid():
+                fitness = self.Fit.fitness(schedule)
+                break
+        return [matrix, fitness]  # [solution, fit]
 
     # Function to sort by values
     def sort_by_values(self, front: list, obj_list: array):
