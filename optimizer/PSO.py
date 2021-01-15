@@ -7,7 +7,6 @@
 #       Github:     https://github.com/thieu1995                                                        %
 # ------------------------------------------------------------------------------------------------------%
 
-from copy import deepcopy
 from config import Config
 from optimizer.root import Root
 from numpy.random import uniform
@@ -21,8 +20,8 @@ class BasePSO(Root):
     ID_LOCAL_POS = 3        # Personal best location
     ID_LOCAL_FIT = 4        # Personal best fitness
 
-    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, time_bound=None, domain_range=None, paras=None):
-        super().__init__(problem, pop_size, epoch, func_eval, time_bound, domain_range)
+    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, paras=None):
+        super().__init__(problem, pop_size, epoch, func_eval, lb, ub)
         if paras is None:
             paras = {"w_min": 0.4, "w_max": 0.9, "c_local": 1.2, "c_global": 1.2}
         self.w_min = paras["w_min"]
@@ -32,16 +31,13 @@ class BasePSO(Root):
 
     def create_solution(self):
         while True:
-            pos_mt_cloud = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem["tasks"]), len(self.problem["clouds"])))
-            pos_mt_fog = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem["tasks"]), len(self.problem["fogs"])))
-            schedule = matrix_to_schedule(self.problem, [pos_mt_cloud, pos_mt_fog])
+            pos = uniform(self.lb, self.ub, self.problem["shape"])
+            schedule = matrix_to_schedule(self.problem, pos)
             if schedule.is_valid():
                 fitness = self.Fit.fitness(schedule)
-                vel_mt_cloud = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem["tasks"]), len(self.problem["clouds"])))
-                vel_mt_fog = uniform(self.domain_range[0], self.domain_range[1], (len(self.problem["tasks"]), len(self.problem["fogs"])))
+                vel = uniform(self.lb, self.ub, self.problem["shape"])
                 break
-        return [[pos_mt_cloud, pos_mt_fog], fitness, [vel_mt_cloud, vel_mt_fog],
-                [deepcopy(pos_mt_cloud), deepcopy(pos_mt_fog)], deepcopy(fitness)]
+        return [pos, fitness, vel, pos, fitness]
         # [solution, fit, velocity, local_solution, local_fitness]
 
     def evolve(self, pop, fe_mode=None, epoch=None, g_best=None):
@@ -50,15 +46,11 @@ class BasePSO(Root):
 
         for i in range(self.pop_size):
             while True:
-                x_new = []
-                v_new = []
-                for j in range(len(pop[i][self.ID_POS])):
-                    v_temp = w * pop[i][self.ID_VEL][j] + self.c_local * uniform() * (pop[i][self.ID_LOCAL_POS][j] - pop[i][self.ID_POS][j]) + \
-                        self.c_global * uniform() * (g_best[self.ID_POS][j] - pop[i][self.ID_POS][j])
-                    x_temp = pop[i][self.ID_POS][j] + v_temp         # Xi(new) = Xi(old) + Vi(new) * deltaT (deltaT = 1)
-                    x_temp = self.amend_position_random(x_temp)
-                    x_new.append(x_temp)
-                    v_new.append(v_temp)
+                v_new = w * pop[i][self.ID_VEL] + self.c_local * uniform() * (pop[i][self.ID_LOCAL_POS] - pop[i][self.ID_POS]) + \
+                        self.c_global * uniform() * (g_best[self.ID_POS] - pop[i][self.ID_POS])
+                x_new = pop[i][self.ID_POS] + v_new  # Xi(new) = Xi(old) + Vi(new) * deltaT (deltaT = 1)
+                v_new = self.amend_position_random(v_new)
+                x_new = self.amend_position_random(x_new)
                 schedule = matrix_to_schedule(self.problem, x_new)
                 if schedule.is_valid():
                     fit_new = self.Fit.fitness(schedule)

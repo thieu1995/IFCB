@@ -84,25 +84,28 @@ def inside_loop(my_model, n_trials, n_timebound):
         tasks = load_tasks(f'{Config.INPUT_DATA}/tasks_{n_tasks}.json')
         problem = deepcopy(my_model['problem'])
         problem["tasks"] = tasks
+        problem["n_tasks"] = n_tasks
+        problem["shape"] = [len(problem["clouds"]) + len(problem["fogs"]), n_tasks]
+
         for pop_size in OptExp.POP_SIZE:
-            for dr in OptExp.DOMAIN_RANGE:
+            for lb, ub in zip(OptExp.LB, OptExp.UB):
                 parameters_grid = list(ParameterGrid(my_model["param_grid"]))
                 if Config.MODE == "epoch":
                     for epoch in OptExp.EPOCH:
                         for paras in parameters_grid:
                             name_paras = f'{pop_size}_{epoch}'
                             opt = getattr(optimizer, my_model["name"])(problem=problem, pop_size=pop_size, epoch=epoch,
-                                                                       func_eval=None, time_bound=n_timebound, domain_range=dr, paras=paras)
+                                                                       func_eval=None, lb=lb, ub=ub, paras=paras)
                             solution, best_fit, best_fit_list = opt.train()
                 elif Config.MODE == "fe":
                     for fe in OptExp.FE:
                         for paras in parameters_grid:
                             name_paras = f'{pop_size}_{fe}'
                             opt = getattr(optimizer, my_model["name"])(problem=problem, pop_size=pop_size, epoch=None,
-                                                                       func_eval=fe, time_bound=n_timebound, domain_range=dr, paras=paras)
+                                                                       func_eval=fe, lb=lb, ub=ub, paras=paras)
                             solution, best_fit, best_fit_list = opt.train()
 
-                if Config.TIME_BOUND:
+                if Config.TIME_BOUND_KEY:
                     results_folder_path = f'{Config.RESULTS_DATA}_{n_timebound}s/{Config.METRICS}/'
                 else:
                     results_folder_path = f'{Config.RESULTS_DATA}_no_time_bound/{Config.METRICS}/'
@@ -116,7 +119,7 @@ def inside_loop(my_model, n_trials, n_timebound):
 def setting_and_running(my_model):
     print(f'Start running: {my_model["name"]}')
     for n_trials in OptExp.N_TRIALS:
-        if Config.TIME_BOUND:
+        if Config.TIME_BOUND_KEY:
             for n_timebound in OptExp.TIME_BOUND_VALUES:
                 inside_loop(my_model, n_trials, n_timebound)
         else:
@@ -129,13 +132,16 @@ if __name__ == '__main__':
     problem = {
         "clouds": clouds,
         "fogs": fogs,
-        "peers": peers
+        "peers": peers,
+        "n_clouds": len(clouds),
+        "n_fogs": len(fogs),
+        "n_peers": len(peers),
     }
     models = [
         # {"name": "BaseGA", "param_grid": OptParas.GA, "problem": problem},
-        # {"name": "BasePSO", "param_grid": OptParas.PSO, "problem": problem},
+        {"name": "BasePSO", "param_grid": OptParas.PSO, "problem": problem},
         # {"name": "BaseWOA", "param_grid": OptParas.WOA, "problem": problem},
-        {"name": "BaseEO", "param_grid": OptParas.EO, "problem": problem},
+        # {"name": "BaseEO", "param_grid": OptParas.EO, "problem": problem},
     ]
 
     processes = []
