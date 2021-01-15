@@ -67,6 +67,23 @@ class Root:
     def amend_position_random(self, position=None):
         return where(logical_and(self.lb <= position, position <= self.ub), position, uniform(self.lb, self.ub))
 
+    def get_current_best(self, pop:list):
+        if Config.METRICS in Config.METRICS_MAX:
+            current_best = max(pop, key=lambda x: x[self.ID_FIT])
+        else:
+            current_best = min(pop, key=lambda x: x[self.ID_FIT])
+        return current_best
+
+    def update_old_population(self, pop_old:list, pop_new:list):
+        for i in range(0, self.pop_size):
+            if Config.METRICS in Config.METRICS_MAX:
+                if pop_new[i][self.ID_FIT] > pop_old[i][self.ID_FIT]:
+                    pop_old[i] = deepcopy(pop_new[i])
+            else:
+                if pop_new[i][self.ID_FIT] < pop_old[i][self.ID_FIT]:
+                    pop_old[i] = deepcopy(pop_new[i])
+        return pop_old
+
     def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
         pass
 

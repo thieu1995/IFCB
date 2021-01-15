@@ -71,5 +71,5 @@ class BasePSO(Root):
         if fe_mode is None:
             return pop
         else:
-            counter = 2 * self.pop_size  # pop_new + pop_mutation operations
+            counter = self.pop_size  # pop_new + pop_mutation operations
             return pop, counter
