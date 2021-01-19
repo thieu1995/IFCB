@@ -49,27 +49,27 @@ class Config:
 
 
 class DefaultData:
-    R_PROCESSING_BOUND = [100_000, 100_000_000]  # 0.1 MB - 10 MB
-    R_STORAGE_BOUND = [100_000, 100_000_000]
-    Q_PROCESSING_BOUND = [100_000, 100_000_000]
-    Q_STORAGE_BOUND = [100_000, 100_000_000]
+    R_PROCESSING_BOUND = [50_000, 500_000]  # 100 KB - 1000 KB (0.1 - 1.0 MB)
+    R_STORAGE_BOUND = [50_000, 500_000]
+    Q_PROCESSING_BOUND = [50_000, 500_000]
+    Q_STORAGE_BOUND = [50_000, 500_000]
     SERVICE_LATENCY_MAX = [10, 100]                 # 10 seconds to 100 seconds
-    TASK_LIST = list(range(100, 1001, 100))
+    TASK_LIST = list(range(50, 1001, 50))
 
     TASK_LABEL_IMPORTANT = 1
     TASK_DEFAULT_SL_MAX = 10
 
-    NUM_TASKS = 20
-    NUM_FOGS = 10
+    NUM_TASKS = 1000
     NUM_CLOUDS = 2
+    NUM_FOGS = 8
     NUM_PEERS = 5
 
     LOC_LONG_BOUND = [-100, 100]
     LOC_LAT_BOUND = [-100, 100]
 
-    RATE_FOG_CLOUD_LINKED = 0.8
-    RATE_FOG_PEER_LINKED = 0.4
-    RATE_CLOUD_PEER_LINKED = 0.2
+    RATE_FOG_CLOUD_LINKED = 1.0
+    RATE_FOG_PEER_LINKED = 2
+    RATE_CLOUD_PEER_LINKED = 2
 
 
 class OptParas:     # Optimizer parameters config
@@ -105,11 +105,11 @@ class OptParas:     # Optimizer parameters config
 
 class OptExp:       # Optimizer paras in experiments
     N_TRIALS = [10]
-    N_TASKS = [100]
+    N_TASKS = [1000]
     TIME_BOUND_VALUES = [60, 100]
     POP_SIZE = [100]
     LB = [-1]
     UB = [1]
-    EPOCH = [10]
+    EPOCH = [3]
     FE = [100000]
 
