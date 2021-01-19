@@ -21,3 +21,5 @@ class Peer(Base):
         self.sigma_sm = 0       # cost - data forwarding - standby mode
         self.omega_sm = 0       # cost - storage - standby mode
 
+        self.linked_peers = []  # [peer_id, ....]
+
