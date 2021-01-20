@@ -69,9 +69,9 @@ def computation_power(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Sche
                 task = tasks[list_task_id[time_slot]]
                 fog_power += fog.beta * task.r_p
                 start_time_slot = max(0, time_slot - fog.tau)
-                for i in range(start_time_slot, time_slot - 1):
-                    task = list(tasks.values())[i]
-                    factor = 1 / 2 ** (time_slot - i + 1)
+                for j in range(start_time_slot, time_slot):
+                    task = tasks[list_task_id[j]]
+                    factor = 1 / ((time_slot - j) ** 2 + 1)
                     fog_power += factor * fog.beta * task.r_s
 
         for cloud_id, list_task_id in schedule.schedule_clouds_tasks.items():
@@ -80,9 +80,9 @@ def computation_power(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Sche
             if len(list_task_id) > time_slot:
                 task = tasks[list_task_id[time_slot]]
                 cloud_power += cloud.beta * task.q_p
-                for i in range(time_slot - 1):
-                    task = list(tasks.values())[i]
-                    factor = 1 / 2 ** (time_slot - i + 1)
+                for j in range(time_slot):
+                    task = tasks[list_task_id[j]]
+                    factor = 1 / ((time_slot - j) ** 2 + 1)
                     cloud_power += factor * cloud.beta * task.q_s
 
     return fog_power + cloud_power
@@ -97,18 +97,18 @@ def storage_power(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Schedule
         for cloud_id, list_task_id in schedule.schedule_clouds_tasks.items():
             cloud = clouds[cloud_id]
             cloud_power += cloud.gamma_idle
-            for i in range(time_slot):
-                if len(list_task_id) > i:
-                    task = tasks[list_task_id[i]]
+            for j in range(time_slot):
+                if len(list_task_id) > j:
+                    task = tasks[list_task_id[j]]
                     cloud_power += cloud.gamma * task.r_s
 
         for fog_id, list_task_id in schedule.schedule_fogs_tasks.items():
             fog = fogs[fog_id]
             fog_power += fog.gamma_idle
             start_time_slot = max(0, time_slot - fog.tau)
-            for i in range(start_time_slot, time_slot):
-                if len(list_task_id) > i:
-                    task = tasks[list_task_id[i]]
+            for j in range(start_time_slot, time_slot):
+                if len(list_task_id) > j:
+                    task = tasks[list_task_id[j]]
                     fog_power += fog.gamma * task.q_s
 
     for peer_id, list_task_id in schedule.schedule_peers_tasks.items():

@@ -53,6 +53,32 @@ class Schedule:
                     task_handlers[task_id].append(cloud_id)
         return task_handlers
 
+    def get_list_task_handlers_with_order(self):
+        task_handlers = {
+            # "task_id": {
+            #       "fog_id": [taskId, taskID,...],
+            #       "cloud_id": [taskId, taskId, ...], those tasks which will be handled before this task_id
+            # },
+        }
+        for fog_id, list_task_id in self.schedule_fogs_tasks.items():
+            for idx, task_id in enumerate(list_task_id):
+                if task_id not in task_handlers.keys():
+                    list_task_before = []
+                    for idx_before in range(0, idx):
+                        list_task_before.append(list_task_id[idx_before])
+                    task_handlers[task_id] = {
+                        fog_id: list_task_before
+                    }
+                else:
+                    continue
+        for cloud_id, list_task_id in self.schedule_clouds_tasks.items():
+            for idx, task_id in enumerate(list_task_id):
+                list_task_before = []
+                for idx_before in range(0, idx):
+                    list_task_before.append(list_task_id[idx_before])
+                task_handlers[task_id][cloud_id] = list_task_before
+        return task_handlers
+
     def is_valid(self) -> bool:
         """
         Check whether this schedule is valid or not

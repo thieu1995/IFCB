@@ -33,7 +33,7 @@ class BaseSSA(Root):
         for i in range(0, self.n1):
             while True:
                 if r2 < self.ST:
-                    child = pop[i][self.ID_POS] * exp((i + 1) / (uniform() * self.epoch))
+                    child = pop[i][self.ID_POS] * exp((i + 1) / (uniform(self.EPSILON, 1) * self.epoch))
                 else:
                     child = pop[i][self.ID_POS] + normal() * ones(self.problem["shape"])
                 child = self.amend_position_random(child)

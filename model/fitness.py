@@ -90,7 +90,8 @@ class Fitness:
     def calc_latency(self, schedule: Schedule) -> float:
         la_t = latency.transmission_latency(self.clouds, self.fogs, self.peers, self.tasks, schedule)
         la_p = latency.processing_latency(self.clouds, self.fogs, self.peers, self.tasks, schedule)
-        return la_p + la_t
+        la_max = latency.punishment_latency(self.clouds, self.fogs, self.peers, self.tasks, schedule)
+        return la_p + la_t + la_max
 
     def calc_cost(self, schedule: Schedule) -> float:
         co = cost.data_forwarding_cost(self.clouds, self.fogs, self.peers, self.tasks, schedule)
