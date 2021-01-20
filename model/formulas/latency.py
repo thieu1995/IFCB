@@ -71,7 +71,7 @@ def punishment_latency(clouds: {}, fogs: {}, peers: {}, tasks: {}, schedule: Sch
         elif 0 < delay <= 1:
             return delay
         else:
-            return (delay ** 2 - 1)/2
+            return (delay ** 2 + 1)/2
 
     task_latency_dict = {}
     ## Calculate transmission latency for single task
