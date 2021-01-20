@@ -15,15 +15,20 @@ from numpy import array, inf, zeros, argmin
 from numpy.random import uniform
 from utils.schedule_util import matrix_to_schedule
 from uuid import uuid4
+from copy import deepcopy
+from math import sqrt
+from random import randint
 
 
 class Root2(Root):
     ID_IDX = 0
     ID_POS = 1
     ID_FIT = 2
+    
 
     def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None):
         super().__init__(problem, pop_size, epoch, func_eval, lb, ub)
+        self.num_obj = 3
 
     def create_solution(self):
         while True:
@@ -59,58 +64,62 @@ class Root2(Root):
         distance[0] = 1e10
         distance[len(front) - 1] = 1e10
         for k in range(1, len(front) - 1):
-            distance[k] = distance[k] + (obj1[sorted1[k + 1]] - obj1[sorted1[k - 1]]) / (max(obj1) - min(obj1))
+            distance[k] = distance[k] + (obj1[sorted1[k + 1]] - obj1[sorted1[k - 1]]) / (max(obj1) - min(obj1) + 1e-5)
         for k in range(1, len(front) - 1):
-            distance[k] = distance[k] + (obj2[sorted2[k + 1]] - obj2[sorted2[k - 1]]) / (max(obj2) - min(obj2))
+            distance[k] = distance[k] + (obj2[sorted2[k + 1]] - obj2[sorted2[k - 1]]) / (max(obj2) - min(obj2) + 1e-5)
         for k in range(1, len(front) - 1):
-            distance[k] = distance[k] + (obj3[sorted3[k + 1]] - obj3[sorted3[k - 1]]) / (max(obj3) - min(obj3))
+            distance[k] = distance[k] + (obj3[sorted3[k + 1]] - obj3[sorted3[k - 1]]) / (max(obj3) - min(obj3) + 1e-5)
         return distance
-
+    
+    def dominate(self, id1, id2, obj):
+        better = False
+        for i in range(self.num_obj):
+            if obj[i][id1] > obj[i][id2]:
+                return False
+            elif obj[i][id1] < obj[i][id2]:
+                better = True
+        return better
+    
     # Function to carry out NSGA-II's fast non dominated sort
     def fast_non_dominated_sort(self, pop: dict):
-        obj1, obj2, obj3 = [], [], []
+        obj = [[] for _ in range(0, self.num_obj)]
         for idx, item in pop.items():
-            obj1.append(item[self.ID_FIT][0])
-            obj2.append(item[self.ID_FIT][1])
-            obj3.append(item[self.ID_FIT][2])
-        size = len(obj1)
-        S = [[] for _ in range(0, size)]
-        front = [[]]
-        n = [0 for _ in range(0, size)]
-        rank = [0 for _ in range(0, size)]
-
-        for p in range(0, size):
-            S[p] = []
-            n[p] = 0
-            for q in range(0, size):
-                if (obj1[p] > obj1[q] and obj2[p] > obj2[q] and obj3[p] > obj3[q]) \
-                        or (obj1[p] >= obj1[q] and obj2[p] > obj2[q] and obj3[p] > obj3[q]) \
-                        or (obj1[p] > obj1[q] and obj2[p] >= obj2[q] and obj3[p] > obj3[q]) \
-                        or (obj1[p] > obj1[q] and obj2[p] > obj2[q] and obj3[p] >= obj3[q]):
-                    if q not in S[p]:
-                        S[p].append(q)
-                elif (obj1[q] > obj1[p] and obj2[q] > obj2[p] and obj3[q] > obj3[p]) \
-                        or (obj1[q] >= obj1[p] and obj2[q] > obj2[p] and obj3[q] > obj3[p]) \
-                        or (obj1[q] > obj1[p] and obj2[q] >= obj2[p] and obj3[q] > obj3[p]) \
-                        or (obj1[q] > obj1[p] and obj2[q] > obj2[p] and obj3[q] >= obj3[p]):
-                    n[p] = n[p] + 1
-            if n[p] == 0:
-                rank[p] = 0
-                if p not in front[0]:
-                    front[0].append(p)
-        i = 0
-        while (front[i] != []):
-            Q = []
-            for p in front[i]:
-                for q in S[p]:
-                    n[q] = n[q] - 1
-                    if (n[q] == 0):
-                        rank[q] = i + 1
-                        if q not in Q:
-                            Q.append(q)
-            i = i + 1
-            front.append(Q)
-        del front[len(front) - 1]
+            for i in range(self.num_obj):
+                obj[i].append(item[self.ID_FIT][i])
+        size = len(obj[0])
+        front = []
+        num_assigned_individuals = 0
+        indv_ranks = [0 for _ in range(0, size)]
+        rank = 1
+        
+        while num_assigned_individuals < self.pop_size:
+            cur_front = []
+            for i in range(self.pop_size):
+                if indv_ranks[i] > 0:
+                    continue
+                be_dominated = False
+                
+                j = 0
+                while j < len(cur_front):
+                    idx_1 = cur_front[j]
+                    idx_2 = i
+                    if self.dominate(idx_1, idx_2, obj):
+                        be_dominated = True
+                        break
+                    elif self.dominate(idx_2, idx_1, obj):
+                        cur_front[j] = cur_front[-1]
+                        cur_front.pop()
+                        j -= 1
+                    j += 1
+                        
+                if(not be_dominated):
+                    cur_front.append(i)
+                    
+            for i in range(len(cur_front)):
+                indv_ranks[ cur_front[i] ] = rank
+            front.append(cur_front)
+            num_assigned_individuals += len(cur_front)
+            rank += 1
         return front
 
     def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
