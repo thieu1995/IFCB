@@ -8,7 +8,6 @@
 # ------------------------------------------------------------------------------------------------------%
 
 from copy import deepcopy
-from config import Config
 from optimizer.root2 import Root2
 from numpy.random import uniform, random, choice
 from numpy import array, where
