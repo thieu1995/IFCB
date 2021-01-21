@@ -22,7 +22,7 @@ class Config:
 
     METRICS_MAX = ["weighting-min", ]           # other methods need min - for calculate the global best fitness
     METRICS_NEED_MIN_OBJECTIVE_VALUES = False   # For tunning all parameter to find the min-objective value of each objective.
-    MULTI_OBJECTIVE_SUPPORTERS = ["BaseNSGA", "BaseNSGA_II", "BaseNSGA_III", "BaseNSGA_C", "LSHADE"]
+    MULTI_OBJECTIVE_SUPPORTERS = ["BaseNSGA", "BaseNSGA_II", "BaseNSGA_III", "BaseNSGA3", "BaseNSGA_C", "LSHADE"]
 
     ### Single Objective
     # 1. power              --> find Min
@@ -40,7 +40,7 @@ class Config:
     # 1. Pareto-front
 
     ## finally: metrics = ["power", "latency", "cost", "weighting", "distancing", "min-max", "weighting-min", "pareto",...]
-    METRICS = 'weighting'
+    METRICS = 'pareto'
     OBJ_WEIGHTING_METRICS = [0.2, 0.3, 0.5]
     OBJ_DISTANCING_METRICS = [800, 40000, 500]  ## DEMAND-LEVEL REQUIREMENT
     OBJ_MINMAX_METRICS = [800, 40000, 500]

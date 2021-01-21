@@ -124,7 +124,7 @@ def optimize_schedule_with_nsgaii(my_model):
 
 
 if __name__ == "__main__":
-    clouds, fogs, peers = load_nodes(f'{Config.INPUT_DATA}/nodes_2_10_5.json')
+    clouds, fogs, peers = load_nodes(f'{Config.INPUT_DATA}/nodes_4_10_7.json')
     problem = {
         "clouds": clouds,
         "fogs": fogs,
