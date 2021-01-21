@@ -11,7 +11,7 @@ from time import time
 from config import Config
 from sys import exit
 from optimizer.root import Root
-from numpy import array, inf, zeros, argmin, sqrt, hstack, sum, where
+from numpy import array, inf, zeros, argmin, sqrt, hstack, sum, where, ones
 from numpy import min as np_min
 from numpy.random import uniform, random
 from random import randint
@@ -171,7 +171,7 @@ class Root2(Root):
         print(ideal_point)
         return ideal_point, conv_pop
 
-    def ASF(self, objs, weight):    # Achivement Scalarization Function
+    def ASF(self, objs, weight):    # Achievement Scalarization Function
         max_ratio = -inf
         for i in range(self.n_objs):
             w = self.WEIGHT if weight[i] == 0 else weight[i]
@@ -201,13 +201,13 @@ class Root2(Root):
                 idx = list(pop.keys())[extreme_points[i]]
                 intercepts[i] = pop[idx][self.ID_FIT][i]
         else:
-            vector_0 = zeros((self.n_objs, 1))
+            vector_1 = ones((self.n_objs, 1))
             A = []
             for p in range(self.n_objs):
                 idx = list(pop.keys())[extreme_points[p]]
                 A.append(pop[idx][self.ID_FIT])
             A = array(A)        # 2D-matrix
-            A = hstack((A, vector_0))
+            A = hstack((A, vector_1))
             # Khử Gauss tìm một mặt siêu phẳng
             N = len(A)
             for i in range(N-1):
