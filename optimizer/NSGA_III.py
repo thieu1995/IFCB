@@ -82,6 +82,8 @@ class BaseNSGA_III(Root2):
                         rps_pos[min_rp].pop(i)
                         break
                 idx = list(pop.keys())[chosen]
-                new_pop[idx] = deepcopy(pop[idx])
+                _idx = uuid4().hex
+                new_pop[_idx] = deepcopy(pop[idx])
+                new_pop[_idx][self.ID_IDX] = _idx
 
         return deepcopy(new_pop)

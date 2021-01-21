@@ -168,7 +168,6 @@ class Root2(Root):
             for front in fronts:
                 for stt in front:
                     conv_pop[list(conv_pop.keys())[stt]][self.ID_FIT][i] -= ideal_point[i]
-        print(ideal_point)
         return ideal_point, conv_pop
 
     def ASF(self, objs, weight):    # Achievement Scalarization Function
