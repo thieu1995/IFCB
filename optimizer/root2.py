@@ -18,6 +18,7 @@ from random import randint
 from utils.schedule_util import matrix_to_schedule
 from uuid import uuid4
 from copy import deepcopy
+from visualization.visual import visualize
 
 
 class Root2(Root):
@@ -173,19 +174,18 @@ class Root2(Root):
     def ASF(self, objs, weight):    # Achievement Scalarization Function
         max_ratio = -inf
         for i in range(self.n_objs):
-            w = self.WEIGHT if weight[i] == 0 else weight[i]
-            max_ratio = max(max_ratio, objs[i] * 1.0 * w)
+            max_ratio = max(max_ratio, objs[i] * 1.0 / weight[i])
         return max_ratio
 
-    def find_extreme_points(self, pop, fronts):
+    def find_extreme_points(self, conv_pop, fronts):
         extreme_points = []
         for f in range(self.n_objs):
             w = [self.WEIGHT] * self.n_objs
             w[f] = 1.0
             min_ASF = inf
-            min_indv = fronts[0][0]
-            for stt_sol in fronts[0]:
-                asf = self.ASF(pop[list(pop.keys())[stt_sol]][self.ID_FIT], w)
+            min_indv = 0
+            for stt_sol in range(len(conv_pop)):
+                asf = self.ASF(conv_pop[list(conv_pop.keys())[stt_sol]][self.ID_FIT], w)
                 if asf < min_ASF:
                     min_ASF = asf
                     min_indv = stt_sol
@@ -205,11 +205,11 @@ class Root2(Root):
             for p in range(self.n_objs):
                 idx = list(pop.keys())[extreme_points[p]]
                 A.append(pop[idx][self.ID_FIT])
-            A = array(A)        # 2D-matrix
+            # A = array([[-1, 1, 2], [2, 0, -3], [5, 1, -2]])        # 2D-matrix
             A = hstack((A, vector_1))
-            # Khử Gauss tìm một mặt siêu phẳng
             N = len(A)
-            for i in range(N-1):
+            # Khử Gauss tìm một mặt siêu phẳng
+            for i in range(N - 1):
                 for j in range(i + 1, N):
                     ratio = A[j][i] / A[i][i]
                     for term in range(len(A[i])):
@@ -261,11 +261,11 @@ class Root2(Root):
         d = sum((k*direction - point)**2)
         return sqrt(d)
 
-    def associate(self, reference_points, conv_pop, fronts):
+    def associate(self, reference_points, conv_pop, fronts, last):
         rps_pos = [[] for _ in range(0, len(reference_points))]
         num_mem = [0] * len(reference_points)
-
-        for front in fronts:
+        for i in range(len(fronts)):
+            front = fronts[i]
             for stt in front:
                 min_rp = len(reference_points)
                 min_dist = inf
@@ -275,8 +275,10 @@ class Root2(Root):
                     if d < min_dist:
                         min_dist = d
                         min_rp = r
-                num_mem[min_rp] += 1
-                rps_pos[min_rp].append([stt, min_dist])
+                if i < last:
+                    num_mem[min_rp] += 1
+                else:
+                    rps_pos[min_rp].append([stt, min_dist])
         return num_mem, rps_pos
 
     def find_niche_reference_point(self, num_mem, rps_pos):
@@ -285,7 +287,7 @@ class Root2(Root):
         min_size = np_min(cluster_members)
         min_rps = where(cluster_members == min_size)[0]
         if len(min_rps) == 0:
-            return -1
+            return 0
         return min_rps[randint(0, len(min_rps) - 1)]
 
     def select_cluster_member(self, reference_points:list, n_mems:int):
@@ -321,6 +323,13 @@ class Root2(Root):
                 time_epoch_start = time()
                 pop = self.evolve(pop, None, epoch, None)
                 fronts = self.fast_non_dominated_sort(pop)
+                if(epoch % 10) == 1:
+                    data = [[] for i in range(self.n_objs)]
+                    for f in range(self.n_objs):
+                        for it in range(len(pop)):
+                            idx = list(pop.keys())[it]
+                            data[f].append(pop[idx][self.ID_FIT][f])
+                    visualize('input_' + str(epoch), data)
                 current_best = []
                 for it in fronts[0]:
                     current_best.append(list(pop.values())[it][self.ID_FIT])

@@ -17,14 +17,23 @@ class BaseNSGA_III(Root2):
     def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, paras=None):
         super().__init__(problem, pop_size, epoch, func_eval, lb, ub)
         if paras is None:
-            paras = {"p_c": 0.9, "p_m": 0.05}
+            paras = {"p_c": 0.9, "p_m": 0.1}
         self.p_c = paras["p_c"]
         self.p_m = paras["p_m"]
+        self.cof_divs = 16
 
     def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
-        pop_temp = deepcopy(pop)
+        
+        fronts = self.fast_non_dominated_sort(pop)
+        pop_temp = {}
+        
+        for i in range(len(fronts[0])):
+            key = list(pop.keys())[fronts[0][i]]
+            _idx = uuid4().hex
+            pop_temp[_idx] = pop[key]
+        
         # Generating offsprings
-        while (len(pop_temp) != 2 * self.pop_size):
+        while (len(pop_temp) < 2 * self.pop_size):
             stt_dad, stt_mom = choice(list(range(0, self.pop_size)), 2, replace=False)
             idx_dad, idx_mom = list(pop.keys())[stt_dad], list(pop.keys())[stt_mom]
             child = self.crossover(pop[idx_dad], pop[idx_mom], self.p_c)
@@ -42,44 +51,49 @@ class BaseNSGA_III(Root2):
             last += 1
             if last == len(fronts):
                 break
-        while len(fronts) > last:
-            fronts.pop()        # remove useless individual
+        # while len(fronts) > last + 1:
+        #     fronts.pop()        # remove useless individual
 
         for i in range(len(fronts) - 1):
             for idx in fronts[i]:
                 key = list(pop.keys())[idx]
                 _idx = uuid4().hex
                 new_pop[_idx] = deepcopy(pop[key])
+                new_pop[_idx][self.ID_IDX] = _idx
         
         if len(new_pop) == self.pop_size:
             return new_pop
-        ## ideal_point: la min(fit_list) cua front0
+        ## ideal_point: la min(fit_list)
         ## conv_pop: change the fitness cua solution in fronts
         ideal_point, conv_pop = self.compute_ideal_points(pop, fronts)
 
         ### N_global best solution for each objective
-        extreme_points = self.find_extreme_points(pop, fronts)
+        extreme_points = self.find_extreme_points(conv_pop, fronts)
 
         ### The fitness of n-global-best (if duplicate --> will use Gauss)
-        intercepts = self.get_hyperplane(pop, extreme_points)
+        intercepts = self.get_hyperplane(conv_pop, extreme_points)
 
         ## Ben tren return conv_pop nhung ben duoi lai khong dung den???
-        conv_pop = self.normalize_objectives(pop, fronts, intercepts, ideal_point)
+        conv_pop = self.normalize_objectives(conv_pop, fronts, intercepts, ideal_point)
 
         ### Kinda like creating brute-force weights for all objectives???
-        reference_points = self.generate_reference_points(6)
+        reference_points = self.generate_reference_points(self.cof_divs)
 
-        num_mem, rps_pos = self.associate(reference_points, conv_pop, fronts)
+        num_mem, rps_pos = self.associate(reference_points, conv_pop, fronts, last)
+        
         while len(new_pop) < self.pop_size:
+            # print([rps_pos], [num_mem])
             min_rp = self.find_niche_reference_point(num_mem, rps_pos)
             chosen = self.select_cluster_member(rps_pos[min_rp], num_mem[min_rp])
             if chosen < 0:
                 rps_pos.pop(min_rp)
+                num_mem.pop(min_rp)
             else:
                 num_mem[min_rp] += 1
                 for i in range(len(rps_pos[min_rp])):
                     if rps_pos[min_rp][i][0] == chosen:
                         rps_pos[min_rp].pop(i)
+                        num_mem[min_rp].pop(i)
                         break
                 idx = list(pop.keys())[chosen]
                 _idx = uuid4().hex
