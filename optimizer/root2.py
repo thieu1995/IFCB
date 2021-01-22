@@ -18,7 +18,6 @@ from random import randint
 from utils.schedule_util import matrix_to_schedule
 from uuid import uuid4
 from copy import deepcopy
-from visualization.visual import visualize
 
 
 class Root2(Root):
@@ -323,13 +322,6 @@ class Root2(Root):
                 time_epoch_start = time()
                 pop = self.evolve(pop, None, epoch, None)
                 fronts = self.fast_non_dominated_sort(pop)
-                if(epoch % 10) == 1:
-                    data = [[] for i in range(self.n_objs)]
-                    for f in range(self.n_objs):
-                        for it in range(len(pop)):
-                            idx = list(pop.keys())[it]
-                            data[f].append(pop[idx][self.ID_FIT][f])
-                    visualize('input_' + str(epoch), data)
                 current_best = []
                 for it in fronts[0]:
                     current_best.append(list(pop.values())[it][self.ID_FIT])

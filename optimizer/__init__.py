@@ -14,3 +14,4 @@ from .EO import BaseEO
 from .AEO import BaseAEO
 from .SSA import BaseSSA
 from .NSGA_II import BaseNSGA_II
+from .NSGA_III import BaseNSGA_III

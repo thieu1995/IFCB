@@ -85,7 +85,6 @@ def save_visualization(problem, solution, name_mha, name_paras, results_folder_p
 
 
 def inside_loop(my_model, n_trials, n_timebound):
-    Path(f'{Config.RESULTS_DATA}_{n_trials}').mkdir(parents=True, exist_ok=True)
     tasks = load_tasks(f'{Config.INPUT_DATA}/tasks_{my_model["n_tasks"]}.json')
     problem = deepcopy(my_model['problem'])
     problem["tasks"] = tasks
@@ -101,9 +100,9 @@ def inside_loop(my_model, n_trials, n_timebound):
         solutions, g_best, g_best_dict = optimizer.train()
 
     if Config.TIME_BOUND_KEY:
-        results_folder_path = f'{Config.RESULTS_DATA}_{n_timebound}s/{Config.METRICS}/'
+        results_folder_path = f'{Config.RESULTS_DATA}_{n_timebound}s/{Config.METRICS}/{n_trials}'
     else:
-        results_folder_path = f'{Config.RESULTS_DATA}_no_time_bound/{Config.METRICS}/'
+        results_folder_path = f'{Config.RESULTS_DATA}_no_time_bound/{Config.METRICS}/{n_trials}'
     Path(results_folder_path).mkdir(parents=True, exist_ok=True)
     name_mha = 'nsgaii'
     name_paras = f'{my_model["epoch"]}_{my_model["pop_size"]}'
@@ -115,7 +114,7 @@ def inside_loop(my_model, n_trials, n_timebound):
 
 def optimize_schedule_with_nsgaii(my_model):
     print(f'Start running: {my_model["optimizer"]}')
-    for n_trials in OptExp.N_TRIALS:
+    for n_trials in range(OptExp.N_TRIALS):
         if Config.TIME_BOUND_KEY:
             for n_timebound in OptExp.TIME_BOUND_VALUES:
                 inside_loop(my_model, n_trials, n_timebound)
@@ -124,7 +123,7 @@ def optimize_schedule_with_nsgaii(my_model):
 
 
 if __name__ == "__main__":
-    clouds, fogs, peers = load_nodes(f'{Config.INPUT_DATA}/nodes_4_10_7.json')
+    clouds, fogs, peers = load_nodes(f'{Config.INPUT_DATA}/nodes_2_8_5.json')
     problem = {
         "clouds": clouds,
         "fogs": fogs,

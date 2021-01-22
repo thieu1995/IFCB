@@ -1,21 +1,23 @@
 #!/usr/bin/env python
 # ------------------------------------------------------------------------------------------------------%
-# Created by "Thieu" at 11:17, 14/01/2021                                                               %
+# Created by "Thieu" at 14:18, 22/01/2021                                                               %
 #                                                                                                       %
 #       Email:      nguyenthieu2102@gmail.com                                                           %
 #       Homepage:   https://www.researchgate.net/profile/Nguyen_Thieu2                                  %
 #       Github:     https://github.com/thieu1995                                                        %
 # ------------------------------------------------------------------------------------------------------%
 
+from sklearn.model_selection import ParameterGrid
+import multiprocessing
+from time import time
 from pathlib import Path
 from copy import deepcopy
-from sklearn.model_selection import ParameterGrid
 from pandas import DataFrame
 import pickle as pkl
 from numpy import insert, array, concatenate
 
-from config import Config, OptExp
-from optimizer.NSGA3 import BaseNSGA3
+from config import Config, OptExp, OptParas
+import optimizer
 from utils.io_util import load_tasks, load_nodes
 from utils.visual.scatter import visualize_front_3d, visualize_front_2d, visualize_front_1d
 
@@ -68,62 +70,74 @@ def save_visualization(problem, solution, name_mha, name_paras, results_folder_p
     fn_1d_S = f'/{len(problem["tasks"])}_tasks-2d-S'
     fn_1d_M = f'/{len(problem["tasks"])}_tasks-2d-M'
 
-    visualize_front_3d([solution], ["Power Consumption", "Service Latency", "Monetary Cost"], ["NSGA-III"],
+    visualize_front_3d([solution], ["Power Consumption", "Service Latency", "Monetary Cost"], ["NSGA-II"],
                        ["red"], ["o"], fn_3d, [path_png, path_pdf], [".png", ".pdf"], True)
-    visualize_front_2d([solution[:, 0:2]], ["Power Consumption", "Service Latency"], ["NSGA-III"],
+    visualize_front_2d([solution[:, 0:2]], ["Power Consumption", "Service Latency"], ["NSGA-II"],
                        ["red"], ["o"], fn_2d_PS, [path_png, path_pdf], [".png", ".pdf"])
-    visualize_front_2d([solution[:, [0, 2]]], ["Power Consumption", "Monetary Cost"], ["NSGA-III"],
+    visualize_front_2d([solution[:, [0, 2]]], ["Power Consumption", "Monetary Cost"], ["NSGA-II"],
                        ["red"], ["o"], fn_2d_PM, [path_png, path_pdf], [".png", ".pdf"])
-    visualize_front_2d([solution[:, 1:3]], ["Service Latency", "Monetary Cost"], ["NSGA-III"],
+    visualize_front_2d([solution[:, 1:3]], ["Service Latency", "Monetary Cost"], ["NSGA-II"],
                        ["red"], ["o"], fn_2d_SM, [path_png, path_pdf], [".png", ".pdf"])
-    visualize_front_1d([solution[:, 0]], ["Power Consumption"], ["NSGA-III"],
+    visualize_front_1d([solution[:, 0]], ["Power Consumption"], ["NSGA-II"],
                        ["red"], ["o"], fn_1d_P, [path_png, path_pdf], [".png", ".pdf"])
-    visualize_front_1d([solution[:, 1]], ["Service Latency"], ["NSGA-III"],
+    visualize_front_1d([solution[:, 1]], ["Service Latency"], ["NSGA-II"],
                        ["red"], ["o"], fn_1d_S, [path_png, path_pdf], [".png", ".pdf"])
-    visualize_front_1d([solution[:, 2]], ["Monetary Cost"], ["NSGA-III"],
+    visualize_front_1d([solution[:, 2]], ["Monetary Cost"], ["NSGA-II"],
                        ["red"], ["o"], fn_1d_M, [path_png, path_pdf], [".png", ".pdf"])
 
 
-def inside_loop(my_model, n_trials, n_timebound):
-    Path(f'{Config.RESULTS_DATA}_{n_trials}').mkdir(parents=True, exist_ok=True)
-    tasks = load_tasks(f'{Config.INPUT_DATA}/tasks_{my_model["n_tasks"]}.json')
-    problem = deepcopy(my_model['problem'])
-    problem["tasks"] = tasks
-    problem["n_tasks"] = my_model["n_tasks"]
-    problem["shape"] = [len(problem["clouds"]) + len(problem["fogs"]), my_model["n_tasks"]]
+def inside_loop(my_model, n_trials, n_timebound, epoch, fe, end_paras):
+    for n_tasks in OptExp.N_TASKS:
+        tasks = load_tasks(f'{Config.INPUT_DATA}/tasks_{n_tasks}.json')
+        problem = deepcopy(my_model['problem'])
+        problem["tasks"] = tasks
+        problem["n_tasks"] = n_tasks
+        problem["shape"] = [len(problem["clouds"]) + len(problem["fogs"]), n_tasks]
 
-    # for paras in parameters_grid:
-    if Config.MODE == "epoch":
-        optimizer = BaseNSGA3(problem, my_model["pop_size"], my_model["epoch"], my_model["func_eval"], my_model["lb"], my_model["ub"], paras=None)
-        solutions, g_best, g_best_dict = optimizer.train()
-    elif Config.MODE == "fe":
-        optimizer = BaseNSGA3(problem, my_model["pop_size"], my_model["epoch"], my_model["func_eval"], my_model["lb"], my_model["ub"], paras=None)
-        solutions, g_best, g_best_dict = optimizer.train()
-
-    if Config.TIME_BOUND_KEY:
-        results_folder_path = f'{Config.RESULTS_DATA}_{n_timebound}s/{Config.METRICS}/'
-    else:
-        results_folder_path = f'{Config.RESULTS_DATA}_no_time_bound/{Config.METRICS}/'
-    Path(results_folder_path).mkdir(parents=True, exist_ok=True)
-    name_mha = 'nsga3'
-    name_paras = f'{my_model["epoch"]}_{my_model["pop_size"]}'
-
-    save_training_fitness_information(g_best_dict, len(tasks), name_mha, name_paras, results_folder_path)
-    save_experiment_result(problem, solutions, g_best, name_mha, name_paras, results_folder_path)
-    save_visualization(problem, g_best, name_mha, name_paras, results_folder_path)
+        for pop_size in OptExp.POP_SIZE:
+            for lb, ub in zip(OptExp.LB, OptExp.UB):
+                parameters_grid = list(ParameterGrid(my_model["param_grid"]))
+                for paras in parameters_grid:
+                    opt = getattr(optimizer, my_model["class"])(problem=problem, pop_size=pop_size, epoch=epoch,
+                                                                func_eval=fe, lb=lb, ub=ub, paras=paras)
+                    solutions, g_best, g_best_dict = opt.train()
+                    if Config.TIME_BOUND_KEY:
+                        results_folder_path = f'{Config.RESULTS_DATA}_{n_timebound}s/{Config.METRICS}/{n_trials}'
+                    else:
+                        results_folder_path = f'{Config.RESULTS_DATA}_no_time_bound/{Config.METRICS}/{n_trials}'
+                    Path(results_folder_path).mkdir(parents=True, exist_ok=True)
+                    name_paras = f'{epoch}_{pop_size}_{end_paras}'
+                    save_training_fitness_information(g_best_dict, len(tasks), my_model["name"], name_paras, results_folder_path)
+                    save_experiment_result(problem, solutions, g_best, my_model["name"], name_paras, results_folder_path)
+                    save_visualization(problem, g_best, my_model["name"], name_paras, results_folder_path)
 
 
-def optimize_schedule_with_nsgaiii(my_model):
-    print(f'Start running: {my_model["optimizer"]}')
-    for n_trials in OptExp.N_TRIALS:
+def setting_and_running(my_model):
+    print(f'Start running: {my_model["name"]}')
+    for n_trials in range(OptExp.N_TRIALS):
         if Config.TIME_BOUND_KEY:
             for n_timebound in OptExp.TIME_BOUND_VALUES:
-                inside_loop(my_model, n_trials, n_timebound)
+                if Config.MODE == "epoch":
+                    for epoch in OptExp.EPOCH:
+                        end_paras = f"{epoch}"
+                        inside_loop(my_model, n_trials, n_timebound, epoch, None, end_paras)
+                elif Config.MODE == "fe":
+                    for fe in OptExp.FE:
+                        end_paras = f"{fe}"
+                        inside_loop(my_model, n_trials, n_timebound, None, fe, end_paras)
         else:
-            inside_loop(my_model, n_trials, None)
+            if Config.MODE == "epoch":
+                for epoch in OptExp.EPOCH:
+                    end_paras = f"{epoch}"
+                    inside_loop(my_model, n_trials, None, epoch, None, end_paras)
+            elif Config.MODE == "fe":
+                for fe in OptExp.FE:
+                    end_paras = f"{fe}"
+                    inside_loop(my_model, n_trials, None, None, fe, end_paras)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+    starttime = time()
     clouds, fogs, peers = load_nodes(f'{Config.INPUT_DATA}/nodes_2_8_5.json')
     problem = {
         "clouds": clouds,
@@ -133,15 +147,19 @@ if __name__ == "__main__":
         "n_fogs": len(fogs),
         "n_peers": len(peers),
     }
-    param_grid = {
-        'n_tasks': [100],  # list(range(150, 201, 50))
-        'pop_size': [50],  # [100]
-        'epoch': [50],  # [200]
-        'func_eval': [100000],
-        'lb': [-1],
-        'ub': [1],
-        'optimizer': ['NSGA-III'],
-        'problem': [problem]
-    }
-    for item in list(ParameterGrid(param_grid)):
-        optimize_schedule_with_nsgaiii(item)
+    models = [
+        {"name": "NSGA-II", "class": "BaseNSGA_II", "param_grid": OptParas.NSGA_II, "problem": problem},
+        {"name": "NSGA-III", "class": "BaseNSGA_III", "param_grid": OptParas.NSGA_III, "problem": problem},
+    ]
+
+    processes = []
+    for my_md in models:
+        p = multiprocessing.Process(target=setting_and_running, args=(my_md,))
+        processes.append(p)
+        p.start()
+
+    for process in processes:
+        process.join()
+
+    print('That took: {} seconds'.format(time() - starttime))
+

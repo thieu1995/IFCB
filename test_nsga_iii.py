@@ -115,7 +115,7 @@ def inside_loop(my_model, n_trials, n_timebound):
 
 def optimize_schedule_with_nsgaiii(my_model):
     print(f'Start running: {my_model["optimizer"]}')
-    for n_trials in OptExp.N_TRIALS:
+    for n_trials in range(OptExp.N_TRIALS):
         if Config.TIME_BOUND_KEY:
             for n_timebound in OptExp.TIME_BOUND_VALUES:
                 inside_loop(my_model, n_trials, n_timebound)
@@ -135,8 +135,8 @@ if __name__ == "__main__":
     }
     param_grid = {
         'n_tasks': [100],  # list(range(150, 201, 50))
-        'pop_size': [10],  # [100]
-        'epoch': [10],  # [200]
+        'pop_size': [20],  # [100]
+        'epoch': [3],  # [200]
         'func_eval': [100000],
         'lb': [-1],
         'ub': [1],

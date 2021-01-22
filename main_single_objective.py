@@ -78,9 +78,8 @@ def save_visualization(problem, solution, best_fit, name_model, name_paras, resu
     bar_chart_2d([cost], [f'Monetary Cost'], [name_model], ["red"], fn_2d_cost, [path_png, path_pdf], [".png", ".pdf"])
 
 
-def inside_loop(my_model, n_trials, n_timebound):
+def inside_loop(my_model, n_trials, n_timebound, epoch, fe, end_paras):
     for n_tasks in OptExp.N_TASKS:
-        Path(f'{Config.RESULTS_DATA}_{n_trials}').mkdir(parents=True, exist_ok=True)
         tasks = load_tasks(f'{Config.INPUT_DATA}/tasks_{n_tasks}.json')
         problem = deepcopy(my_model['problem'])
         problem["tasks"] = tasks
@@ -90,45 +89,49 @@ def inside_loop(my_model, n_trials, n_timebound):
         for pop_size in OptExp.POP_SIZE:
             for lb, ub in zip(OptExp.LB, OptExp.UB):
                 parameters_grid = list(ParameterGrid(my_model["param_grid"]))
-                if Config.MODE == "epoch":
-                    for epoch in OptExp.EPOCH:
-                        for paras in parameters_grid:
-                            name_paras = f'{pop_size}_{epoch}'
-                            opt = getattr(optimizer, my_model["name"])(problem=problem, pop_size=pop_size, epoch=epoch,
-                                                                       func_eval=None, lb=lb, ub=ub, paras=paras)
-                            solution, best_fit, best_fit_list = opt.train()
-                elif Config.MODE == "fe":
-                    for fe in OptExp.FE:
-                        for paras in parameters_grid:
-                            name_paras = f'{pop_size}_{fe}'
-                            opt = getattr(optimizer, my_model["name"])(problem=problem, pop_size=pop_size, epoch=None,
-                                                                       func_eval=fe, lb=lb, ub=ub, paras=paras)
-                            solution, best_fit, best_fit_list = opt.train()
+                for paras in parameters_grid:
+                    name_paras = f'{epoch}_{pop_size}_{end_paras}'
+                    opt = getattr(optimizer, my_model["class"])(problem=problem, pop_size=pop_size, epoch=epoch,
+                                                               func_eval=fe, lb=lb, ub=ub, paras=paras)
+                    solution, best_fit, best_fit_list = opt.train()
+                    if Config.TIME_BOUND_KEY:
+                        results_folder_path = f'{Config.RESULTS_DATA}_{n_timebound}s/{Config.METRICS}/{n_trials}'
+                    else:
+                        results_folder_path = f'{Config.RESULTS_DATA}_no_time_bound/{Config.METRICS}/{n_trials}'
+                    Path(results_folder_path).mkdir(parents=True, exist_ok=True)
 
-                if Config.TIME_BOUND_KEY:
-                    results_folder_path = f'{Config.RESULTS_DATA}_{n_timebound}s/{Config.METRICS}/'
-                else:
-                    results_folder_path = f'{Config.RESULTS_DATA}_no_time_bound/{Config.METRICS}/'
-                Path(results_folder_path).mkdir(parents=True, exist_ok=True)
-
-                save_training_fitness_information(best_fit_list, len(tasks), my_model["name"], name_paras, results_folder_path)
-                save_experiment_result(problem, solution, my_model["name"], name_paras, results_folder_path)
-                save_visualization(problem, solution, best_fit, my_model["name"], name_paras, results_folder_path)
+                    save_training_fitness_information(best_fit_list, len(tasks), my_model["name"], name_paras, results_folder_path)
+                    save_experiment_result(problem, solution, my_model["name"], name_paras, results_folder_path)
+                    save_visualization(problem, solution, best_fit, my_model["name"], name_paras, results_folder_path)
 
 
 def setting_and_running(my_model):
     print(f'Start running: {my_model["name"]}')
-    for n_trials in OptExp.N_TRIALS:
+    for n_trials in range(OptExp.N_TRIALS):
         if Config.TIME_BOUND_KEY:
             for n_timebound in OptExp.TIME_BOUND_VALUES:
-                inside_loop(my_model, n_trials, n_timebound)
+                if Config.MODE == "epoch":
+                    for epoch in OptExp.EPOCH:
+                        end_paras = f"{epoch}"
+                        inside_loop(my_model, n_trials, n_timebound, epoch, None, end_paras)
+                elif Config.MODE == "fe":
+                    for fe in OptExp.FE:
+                        end_paras = f"{fe}"
+                        inside_loop(my_model, n_trials, n_timebound, None, fe, end_paras)
         else:
-            inside_loop(my_model, n_trials, None)
+            if Config.MODE == "epoch":
+                for epoch in OptExp.EPOCH:
+                    end_paras = f"{epoch}"
+                    inside_loop(my_model, n_trials, None, epoch, None, end_paras)
+            elif Config.MODE == "fe":
+                for fe in OptExp.FE:
+                    end_paras = f"{fe}"
+                    inside_loop(my_model, n_trials, None, None, fe, end_paras)
 
 
 if __name__ == '__main__':
     starttime = time()
-    clouds, fogs, peers = load_nodes(f'{Config.INPUT_DATA}/nodes_4_10_7.json')
+    clouds, fogs, peers = load_nodes(f'{Config.INPUT_DATA}/nodes_2_8_5.json')
     problem = {
         "clouds": clouds,
         "fogs": fogs,
@@ -142,8 +145,8 @@ if __name__ == '__main__':
         # {"name": "BasePSO", "param_grid": OptParas.PSO, "problem": problem},
         # {"name": "BaseWOA", "param_grid": OptParas.WOA, "problem": problem},
         # {"name": "BaseEO", "param_grid": OptParas.EO, "problem": problem},
-        # {"name": "BaseAEO", "param_grid": OptParas.AEO, "problem": problem},
-        {"name": "BaseSSA", "param_grid": OptParas.SSA, "problem": problem},
+        {"name": "AEO", "class": "BaseAEO", "param_grid": OptParas.AEO, "problem": problem},
+        {"name": "SSA", "class": "BaseSSA", "param_grid": OptParas.SSA, "problem": problem},
     ]
 
     processes = []

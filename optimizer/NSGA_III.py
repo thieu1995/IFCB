@@ -17,10 +17,10 @@ class BaseNSGA_III(Root2):
     def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, paras=None):
         super().__init__(problem, pop_size, epoch, func_eval, lb, ub)
         if paras is None:
-            paras = {"p_c": 0.9, "p_m": 0.1}
+            paras = {"p_c": 0.9, "p_m": 0.1, "cof_divs": 16}
         self.p_c = paras["p_c"]
         self.p_m = paras["p_m"]
-        self.cof_divs = 16
+        self.cof_divs = paras["cof_divs"]
 
     def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
         
@@ -82,7 +82,6 @@ class BaseNSGA_III(Root2):
         num_mem, rps_pos = self.associate(reference_points, conv_pop, fronts, last)
         
         while len(new_pop) < self.pop_size:
-            # print([rps_pos], [num_mem])
             min_rp = self.find_niche_reference_point(num_mem, rps_pos)
             chosen = self.select_cluster_member(rps_pos[min_rp], num_mem[min_rp])
             if chosen < 0:

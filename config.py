@@ -22,7 +22,7 @@ class Config:
 
     METRICS_MAX = ["weighting-min", ]           # other methods need min - for calculate the global best fitness
     METRICS_NEED_MIN_OBJECTIVE_VALUES = False   # For tunning all parameter to find the min-objective value of each objective.
-    MULTI_OBJECTIVE_SUPPORTERS = ["BaseNSGA", "BaseNSGA_II", "BaseNSGA_III", "BaseNSGA3", "BaseNSGA_C", "LSHADE"]
+    MULTI_OBJECTIVE_SUPPORTERS = ["BaseNSGA", "BaseNSGA_II", "BaseNSGA_III", "BaseNSGA_C", "LSHADE"]
 
     ### Single Objective
     # 1. power              --> find Min
@@ -102,14 +102,25 @@ class OptParas:     # Optimizer parameters config
         "SD": [0.1]     # number of sparrows who perceive the danger
     }
 
+    ### Multi-objectives
+    NSGA_II = {
+        "p_c": [0.9],
+        "p_m": [0.05]
+    }
+    NSGA_III = {
+        "p_c": [0.9],
+        "p_m": [0.05],
+        "cof_divs": [16]
+    }
+
 
 class OptExp:       # Optimizer paras in experiments
-    N_TRIALS = [10]
-    N_TASKS = [1000]
+    N_TRIALS = 10
+    N_TASKS = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
     TIME_BOUND_VALUES = [60, 100]
-    POP_SIZE = [100]
+    POP_SIZE = [50]
     LB = [-1]
     UB = [1]
-    EPOCH = [3]
+    EPOCH = [100]
     FE = [100000]
 
