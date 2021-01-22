@@ -11,7 +11,8 @@ from time import time
 from config import Config
 from sys import exit
 from optimizer.root import Root
-from numpy import array, inf, zeros, argmin, sqrt, hstack, sum, where, ones
+from numpy import array, inf, zeros, argmin, sqrt, hstack
+from numpy import sum, where, ones, dot, power, subtract, multiply
 from numpy import min as np_min
 from numpy.random import uniform, random
 from random import randint
@@ -179,16 +180,14 @@ class Root2(Root):
     def find_extreme_points(self, conv_pop, fronts):
         extreme_points = []
         for f in range(self.n_objs):
-            w = [self.WEIGHT] * self.n_objs
-            w[f] = 1.0
-            min_ASF = inf
-            min_indv = 0
+            max_fit = inf
+            indv = 0
             for stt_sol in range(len(conv_pop)):
-                asf = self.ASF(conv_pop[list(conv_pop.keys())[stt_sol]][self.ID_FIT], w)
-                if asf < min_ASF:
-                    min_ASF = asf
-                    min_indv = stt_sol
-            extreme_points.append(min_indv)
+                fit = conv_pop[list(conv_pop.keys())[stt_sol]][self.ID_FIT][f]
+                if fit > max_fit:
+                    max_fit = fit
+                    indv = stt_sol
+            extreme_points.append(indv)
         return extreme_points           # n_points ~ n_objs
 
     def get_hyperplane(self, pop, extreme_points):
@@ -251,13 +250,11 @@ class Root2(Root):
         rps = []
         self.generate_recursive(rps, rpoints, num_divs, num_divs, 0)
         return rps
-
+    
+    # The distance from a point to directed vector
     def perpendicular_distance(self, direction, point):
-        direction, point = array(direction), array(point)
-        numerator = sum(direction * point)
-        denominator = sum(direction ** 2)
-        k = numerator * 1.0 / denominator
-        d = sum((k*direction - point)**2)
+        k = dot(direction, point) / sum(power(direction, 2))
+        d = sum(power(subtract(multiply(direction, [k] * len(direction)), point) , 2))
         return sqrt(d)
 
     def associate(self, reference_points, conv_pop, fronts, last):

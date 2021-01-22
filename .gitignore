@@ -15,7 +15,7 @@ model/blockchain/peer_dpos.py
 model/blockchain/simulation.py
 model/blockchain/wallet.py
 model/blockchain/blockchain.py
-
+visualization/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
