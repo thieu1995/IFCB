@@ -24,7 +24,7 @@ class BaseNSGA_III(Root2):
 
     def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
         
-        fronts = self.fast_non_dominated_sort(pop)
+        fronts, rank = self.fast_non_dominated_sort(pop)
         pop_temp = {}
         
         for i in range(len(fronts[0])):
@@ -41,7 +41,7 @@ class BaseNSGA_III(Root2):
             pop_temp[child[self.ID_IDX]] = child
         pop = deepcopy(pop_temp)
 
-        fronts = self.fast_non_dominated_sort(pop)
+        fronts, rank = self.fast_non_dominated_sort(pop)
         last = 0
         next_size = 0
         new_pop = {}
@@ -83,7 +83,7 @@ class BaseNSGA_III(Root2):
         
         while len(new_pop) < self.pop_size:
             min_rp = self.find_niche_reference_point(num_mem, rps_pos)
-            chosen = self.select_cluster_member(rps_pos[min_rp], num_mem[min_rp])
+            chosen = self.select_cluster_member(rps_pos[min_rp], num_mem[min_rp], rank)
             if chosen < 0:
                 rps_pos.pop(min_rp)
                 num_mem.pop(min_rp)

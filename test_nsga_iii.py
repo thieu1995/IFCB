@@ -135,8 +135,8 @@ if __name__ == "__main__":
     }
     param_grid = {
         'n_tasks': [100],  # list(range(150, 201, 50))
-        'pop_size': [20],  # [100]
-        'epoch': [3],  # [200]
+        'pop_size': [200],  # [100]
+        'epoch': [100],  # [200]
         'func_eval': [100000],
         'lb': [-1],
         'ub': [1],

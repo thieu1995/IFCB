@@ -155,7 +155,7 @@ class Root2(Root):
             front.append(cur_front)
             num_assigned_individuals += len(cur_front)
             rank += 1
-        return front
+        return front, rank
 
     ## Functions for NSGA-III
 
@@ -286,13 +286,13 @@ class Root2(Root):
             return 0
         return min_rps[randint(0, len(min_rps) - 1)]
 
-    def select_cluster_member(self, reference_points:list, n_mems:int):
+    def select_cluster_member(self, reference_points:list, n_mems:int, rank:list):
         chosen = -1
         if len(reference_points) > 0:
-            if n_mems == 0:  # currently has no member: Find the closet member
-                chosen = min(reference_points, key=lambda point: point[1])[0]
-            else:           # Random a member
-                chosen = reference_points[randint(0, len(reference_points) - 1)][0]
+            min_rank = np_min([rank[r] for r in reference_points])
+            for rp in reference_points:
+                if rank[rp] == min_rank:
+                    chosen = rp
         return chosen
 
     def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
@@ -318,7 +318,7 @@ class Root2(Root):
             for epoch in range(self.epoch):
                 time_epoch_start = time()
                 pop = self.evolve(pop, None, epoch, None)
-                fronts = self.fast_non_dominated_sort(pop)
+                fronts, rank = self.fast_non_dominated_sort(pop)
                 current_best = []
                 for it in fronts[0]:
                     current_best.append(list(pop.values())[it][self.ID_FIT])
