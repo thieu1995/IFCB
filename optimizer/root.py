@@ -69,19 +69,31 @@ class Root:
     def amend_position_random(self, position=None):
         return where(logical_and(self.lb <= position, position <= self.ub), position, uniform(self.lb, self.ub))
 
-    def get_current_worst(self, pop:list):
-        if Config.METRICS in Config.METRICS_MAX:
-            current_worst = min(pop, key=lambda x: x[self.ID_FIT])
+    def get_current_worst(self, pop=None):
+        if isinstance(pop, dict):
+            pop_temp = deepcopy(pop.values())
+        elif isinstance(pop, list):
+            pop_temp = deepcopy(pop)
         else:
-            current_worst = max(pop, key=lambda x: x[self.ID_FIT])
-        return current_worst
+            exit()
+        if Config.METRICS in Config.METRICS_MAX:
+            current_worst = min(pop_temp, key=lambda x: x[self.ID_FIT])
+        else:
+            current_worst = max(pop_temp, key=lambda x: x[self.ID_FIT])
+        return deepcopy(current_worst)
 
-    def get_current_best(self, pop:list):
-        if Config.METRICS in Config.METRICS_MAX:
-            current_best = max(pop, key=lambda x: x[self.ID_FIT])
+    def get_current_best(self, pop=None):
+        if isinstance(pop, dict):
+            pop_temp = deepcopy(pop.values())
+        elif isinstance(pop, list):
+            pop_temp = deepcopy(pop)
         else:
-            current_best = min(pop, key=lambda x: x[self.ID_FIT])
-        return current_best
+            exit()
+        if Config.METRICS in Config.METRICS_MAX:
+            current_best = max(pop_temp, key=lambda x: x[self.ID_FIT])
+        else:
+            current_best = min(pop_temp, key=lambda x: x[self.ID_FIT])
+        return deepcopy(current_best)
 
     def update_old_solution(self, old_solution, new_solution):
         if Config.METRICS in Config.METRICS_MAX:
