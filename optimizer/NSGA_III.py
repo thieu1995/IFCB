@@ -47,6 +47,7 @@ class BaseNSGA_III(Root2):
             child = self.crossover(pop[idx_dad], pop[idx_mom], self.p_c)
             child = self.mutate(child, self.p_m)
             pop_temp[child[self.ID_IDX]] = child
+            
         pop = deepcopy(pop_temp)
 
         fronts, rank = self.fast_non_dominated_sort(pop)
@@ -59,16 +60,18 @@ class BaseNSGA_III(Root2):
             last += 1
             if last == len(fronts):
                 break
-
-        for i in range(len(fronts) - 1):
+        
+        for i in range(last - 1):
             for idx in fronts[i]:
                 key = list(pop.keys())[idx]
                 _idx = uuid4().hex
                 new_pop[_idx] = deepcopy(pop[key])
                 new_pop[_idx][self.ID_IDX] = _idx
         
+        
         if len(new_pop) == self.pop_size:
             return new_pop
+        
         ## ideal_point: la min(fit_list)
         ## conv_pop: change the fitness cua solution in fronts
         ideal_point, conv_pop = self.compute_ideal_points(pop, fronts)
@@ -88,6 +91,8 @@ class BaseNSGA_III(Root2):
         # Divide the indvs to diff cluster by ref vector
         num_mem, rps_pos = self.associate(reference_points, conv_pop, fronts, last)
         
+        
+        
         while len(new_pop) < self.pop_size:
             min_rp = self.find_niche_reference_point(num_mem, rps_pos)
             chosen = self.select_cluster_member(rps_pos[min_rp], num_mem[min_rp], rank)
@@ -99,7 +104,7 @@ class BaseNSGA_III(Root2):
                 for i in range(len(rps_pos[min_rp])):
                     if rps_pos[min_rp][i][0] == chosen:
                         rps_pos[min_rp].pop(i)
-                        num_mem[min_rp].pop(i)
+                        num_mem[min_rp] -= 1
                         break
                 idx = list(pop.keys())[chosen]
                 _idx = uuid4().hex

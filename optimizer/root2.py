@@ -159,7 +159,7 @@ class Root2(Root):
             front.append(cur_front)
             num_assigned_individuals += len(cur_front)
             rank += 1
-        return front, rank
+        return front, indv_ranks
 
     ## Functions for NSGA-III
 
@@ -275,7 +275,7 @@ class Root2(Root):
                     if d < min_dist:
                         min_dist = d
                         min_rp = r
-                if i < last:
+                if i < last - 1:
                     num_mem[min_rp] += 1
                 else:
                     rps_pos[min_rp].append([stt, min_dist])
@@ -291,12 +291,14 @@ class Root2(Root):
         return min_rps[randint(0, len(min_rps) - 1)]
 
     def select_cluster_member(self, reference_points:list, n_mems:int, rank:list):
-        chosen = -1
+        chosen = -1 
+        
         if len(reference_points) > 0:
-            min_rank = np_min([rank[r] for r in reference_points])
+            min_rank = np_min([rank[r[0]] for r in reference_points])
             for rp in reference_points:
-                if rank[rp] == min_rank:
-                    chosen = rp
+                if rank[rp[0]] == min_rank:
+                    chosen = rp[0]
+        
         return chosen
 
     def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
