@@ -40,7 +40,7 @@ class BasePSO(Root):
         return [pos, fitness, vel, pos, fitness]
         # [solution, fit, velocity, local_solution, local_fitness]
 
-    def evolve(self, pop, fe_mode=None, epoch=None, g_best=None):
+    def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
         # Update weight after each move count  (weight down)
         w = (self.epoch - epoch) / self.epoch * (self.w_max - self.w_min) + self.w_min
 

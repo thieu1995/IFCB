@@ -22,7 +22,7 @@ class BaseWOA(Root):
         self.p = paras["p"]
         self.b = paras["b"]
 
-    def evolve(self, pop, fe_mode=None, epoch=None, g_best=None):
+    def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
         a = 2 - 2 * epoch / (self.epoch - 1)    # linearly decreased from 2 to 0
         for i in range(self.pop_size):
             r = random()

@@ -36,7 +36,7 @@ class BaseEO(Root):
             list_equilibrium.append(c_eq5)
         return list_equilibrium
 
-    def evolve(self, pop, fe_mode=None, epoch=None, g_best=None):
+    def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
         if Config.METRICS in Config.METRICS_MAX:
             pop_sorted = sorted(pop, key=lambda item: item[self.ID_FIT], reverse=True)
         else:

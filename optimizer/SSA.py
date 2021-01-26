@@ -27,7 +27,7 @@ class BaseSSA(Root):
         self.n1 = int(self.PD * self.pop_size)
         self.n2 = int(self.SD * self.pop_size)
 
-    def evolve(self, pop, fe_mode=None, epoch=None, g_best=None):
+    def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
         r2 = uniform()  # R2 in [0, 1], the alarm value, random value
         # Using equation (3) update the sparrow’s location;
         for i in range(0, self.n1):

@@ -74,7 +74,7 @@ class BaseGA(Root):
             pop[i] = [child, fitness]
         return pop
 
-    def evolve(self, pop, fe_mode=None, epoch=None, g_best=None):
+    def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
         pop = self.select(pop)
         pop = self.mutate(pop)
         if fe_mode is None:

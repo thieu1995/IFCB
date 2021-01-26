@@ -19,7 +19,7 @@ class BaseAEO(Root):
     def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, paras=None):
         super().__init__(problem, pop_size, epoch, func_eval, lb, ub)
 
-    def evolve(self, pop, fe_mode=None, epoch=None, g_best=None):
+    def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
         # Sorted population in the descending order of the function fitness value
         if Config.METRICS in Config.METRICS_MAX:
             pop = sorted(pop, key=lambda item: item[self.ID_FIT])
