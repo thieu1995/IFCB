@@ -115,12 +115,12 @@ class OptParas:     # Optimizer parameters config
 
 
 class OptExp:       # Optimizer paras in experiments
-    N_TRIALS = 10
-    N_TASKS = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
+    N_TRIALS = 1
+    N_TASKS = [50]
     TIME_BOUND_VALUES = [60, 100]
     POP_SIZE = [50]
     LB = [-1]
     UB = [1]
-    EPOCH = [100]
+    EPOCH = [5]
     FE = [100000]
 
