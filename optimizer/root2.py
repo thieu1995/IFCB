@@ -78,6 +78,7 @@ class Root2(Root):
     # Function to sort by values
     def sort_by_values(self, front: list, obj_list: array):
         sorted_list = []
+        obj_list = deepcopy(obj_list)
         while (len(sorted_list) != len(front)):
             idx_min = argmin(obj_list)
             if idx_min in front:
@@ -87,23 +88,26 @@ class Root2(Root):
 
     # Function to calculate crowding distance
     def crowding_distance(self, pop: dict, front: list):
-        obj1, obj2, obj3 = zeros(len(pop)), zeros(len(pop)), zeros(len(pop))
+    
+        obj = [zeros(len(pop)) for i in range(self.n_objs)]
         for idx, item in enumerate(pop.values()):
-            obj1[idx] = item[self.ID_FIT][0]
-            obj2[idx] = item[self.ID_FIT][1]
-            obj3[idx] = item[self.ID_FIT][2]
-        distance = [0.0 for _ in range(0, len(front))]
-        sorted1 = self.sort_by_values(front, obj1)
-        sorted2 = self.sort_by_values(front, obj2)
-        sorted3 = self.sort_by_values(front, obj3)
-        distance[0] = 1e10
-        distance[len(front) - 1] = 1e10
-        for k in range(1, len(front) - 1):
-            distance[k] = distance[k] + (obj1[sorted1[k + 1]] - obj1[sorted1[k - 1]]) / (max(obj1) - min(obj1) + self.EPSILON)
-        for k in range(1, len(front) - 1):
-            distance[k] = distance[k] + (obj2[sorted2[k + 1]] - obj2[sorted2[k - 1]]) / (max(obj2) - min(obj2) + self.EPSILON)
-        for k in range(1, len(front) - 1):
-            distance[k] = distance[k] + (obj3[sorted3[k + 1]] - obj3[sorted3[k - 1]]) / (max(obj3) - min(obj3) + self.EPSILON)
+            for i in range(self.n_objs):
+                obj[i][idx] = float(item[self.ID_FIT][i])
+        distance = [float(0.0) for _ in range(0, len(front))]
+        sorted_list = []
+        for i in range(self.n_objs):
+            sorted_list_tmp = self.sort_by_values(front, obj[i])
+            sorted_list.append(sorted_list_tmp)
+        
+        distance[0] = inf
+        distance[len(front) - 1] = inf
+        for i in range(self.n_objs):
+            max_value, min_value = max(obj[i]), min(obj[i])
+            diff_value = float(max_value) - float(min_value) + self.EPSILON
+            for k in range(1, len(front) - 1):
+                value_1 = float(obj[i][int(sorted_list[i][k + 1])])
+                value_2 = float(obj[i][sorted_list[i][k - 1]])
+                distance[k] += (value_1 - value_2) / diff_value
         return distance
     
     def dominate(self, id1, id2, obj):

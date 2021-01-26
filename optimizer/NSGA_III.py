@@ -28,14 +28,18 @@ class BaseNSGA_III(Root2):
         fronts, rank = self.fast_non_dominated_sort(pop)
         pop_temp = {}
         
-        while len(pop_temp) < self.old_pop_rate * self.pop_size:
-            for i in range(len(fronts)):
-                key = list(pop.keys())[fronts[0][i]]
+        for front in fronts:
+            stop = False
+            for id in front:
+                key = list(pop.keys())[id]
                 _idx = uuid4().hex
                 pop_temp[_idx] = pop[key]
                 if len(pop_temp) == self.old_pop_rate * self.pop_size:
+                    stop = True
                     break
-        
+            if stop:
+                break
+            
         # Generating offsprings
         while (len(pop_temp) < 2 * self.pop_size):
             stt_dad, stt_mom = choice(list(range(0, self.pop_size)), 2, replace=False)

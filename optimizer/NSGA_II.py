@@ -11,19 +11,34 @@ from copy import deepcopy
 from optimizer.root2 import Root2
 from numpy.random import choice
 from numpy import array, where
+from uuid import uuid4
 
 
 class BaseNSGA_II(Root2):
     def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, paras=None):
         super().__init__(problem, pop_size, epoch, func_eval, lb, ub)
         if paras is None:
-            paras = {"p_c": 0.9, "p_m": 0.05}
+            paras = {"p_c": 0.9, "p_m": 0.1, "cof_divs": 12, "old_pop_rate": 0.7}
         self.p_c = paras["p_c"]
         self.p_m = paras["p_m"]
+        self.cof_divs = paras["cof_divs"]
+        self.old_pop_rate = paras["old_pop_rate"]
 
     def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
-        non_dominated_list = self.fast_non_dominated_sort(pop)
-        pop_temp = deepcopy(pop)
+        non_dominated_list, rank = self.fast_non_dominated_sort(pop)
+        pop_temp = {}
+        
+        for front in non_dominated_list:
+            stop = False
+            for id in front:
+                key = list(pop.keys())[id]
+                _idx = uuid4().hex
+                pop_temp[_idx] = pop[key]
+                if len(pop_temp) == self.old_pop_rate * self.pop_size:
+                    stop = True
+                    break
+            if stop:
+                break
 
         # Generating offsprings
         while (len(pop_temp) != 2 * self.pop_size):
@@ -47,7 +62,8 @@ class BaseNSGA_II(Root2):
             front.reverse()
             for idx in front:
                 idx_real = list(pop_temp.keys())[idx]
-                pop[idx_real] = pop_temp[idx_real]
+                _idx = uuid4().hex
+                pop[_idx] = pop_temp[idx_real]
                 if len(pop) == self.pop_size:
                     break
             if len(pop) == self.pop_size:
