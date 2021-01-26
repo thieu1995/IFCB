@@ -23,9 +23,6 @@ class BaseNSGA_II(Root2):
 
     def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
         non_dominated_list = self.fast_non_dominated_sort(pop)
-        cdist_lists = []
-        for i in range(0, len(non_dominated_list)):
-            cdist_lists.append(self.crowding_distance(pop, non_dominated_list[i]))
         pop_temp = deepcopy(pop)
 
         # Generating offsprings
@@ -36,7 +33,7 @@ class BaseNSGA_II(Root2):
             temp = self.mutate(temp, self.p_m)
             pop_temp[temp[self.ID_IDX]] = temp
 
-        non_dominated_list = self.fast_non_dominated_sort(pop_temp)
+        non_dominated_list, ranks = self.fast_non_dominated_sort(pop_temp)
         cdist_lists = []
         for i in range(0, len(non_dominated_list)):
             cdist_lists.append(self.crowding_distance(pop_temp, non_dominated_list[i]))

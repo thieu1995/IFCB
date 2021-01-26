@@ -110,7 +110,8 @@ class OptParas:     # Optimizer parameters config
     NSGA_III = {
         "p_c": [0.9],
         "p_m": [0.05],
-        "cof_divs": [16]
+        "cof_divs": [16],
+        "old_pop_rate": [0.7]
     }
     MO_SSA = {
         "ST": [0.8],

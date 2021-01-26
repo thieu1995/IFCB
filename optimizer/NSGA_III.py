@@ -17,20 +17,24 @@ class BaseNSGA_III(Root2):
     def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, paras=None):
         super().__init__(problem, pop_size, epoch, func_eval, lb, ub)
         if paras is None:
-            paras = {"p_c": 0.9, "p_m": 0.1, "cof_divs": 16}
+            paras = {"p_c": 0.9, "p_m": 0.1, "cof_divs": 12, "old_pop_rate": 0.7}
         self.p_c = paras["p_c"]
         self.p_m = paras["p_m"]
         self.cof_divs = paras["cof_divs"]
+        self.old_pop_rate = paras["old_pop_rate"]
 
     def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
         
         fronts, rank = self.fast_non_dominated_sort(pop)
         pop_temp = {}
         
-        for i in range(len(fronts[0])):
-            key = list(pop.keys())[fronts[0][i]]
-            _idx = uuid4().hex
-            pop_temp[_idx] = pop[key]
+        while len(pop_temp) < self.old_pop_rate * self.pop_size:
+            for i in range(len(fronts)):
+                key = list(pop.keys())[fronts[0][i]]
+                _idx = uuid4().hex
+                pop_temp[_idx] = pop[key]
+                if len(pop_temp) == self.old_pop_rate * self.pop_size:
+                    break
         
         # Generating offsprings
         while (len(pop_temp) < 2 * self.pop_size):
@@ -51,8 +55,6 @@ class BaseNSGA_III(Root2):
             last += 1
             if last == len(fronts):
                 break
-        # while len(fronts) > last + 1:
-        #     fronts.pop()        # remove useless individual
 
         for i in range(len(fronts) - 1):
             for idx in fronts[i]:
@@ -73,12 +75,13 @@ class BaseNSGA_III(Root2):
         ### The fitness of n-global-best (if duplicate --> will use Gauss)
         intercepts = self.get_hyperplane(conv_pop, extreme_points)
 
-        ## Ben tren return conv_pop nhung ben duoi lai khong dung den???
+        ## Normalize fitness of population
         conv_pop = self.normalize_objectives(conv_pop, fronts, intercepts, ideal_point)
 
-        ### Kinda like creating brute-force weights for all objectives???
+        ### Generate ref points
         reference_points = self.generate_reference_points(self.cof_divs)
 
+        # Divide the indvs to diff cluster by ref vector
         num_mem, rps_pos = self.associate(reference_points, conv_pop, fronts, last)
         
         while len(new_pop) < self.pop_size:
