@@ -17,15 +17,28 @@ class BaseNSGA_III(Root2):
     def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, paras=None):
         super().__init__(problem, pop_size, epoch, func_eval, lb, ub)
         if paras is None:
-            paras = {"p_c": 0.9, "p_m": 0.1, "cof_divs": 12}
+            paras = {"p_c": 0.9, "p_m": 0.1, "cof_divs": 12, "old_pop_rate": 0.7}
         self.p_c = paras["p_c"]
         self.p_m = paras["p_m"]
         self.cof_divs = paras["cof_divs"]
+        self.old_pop_rate = paras["old_pop_rate"]
 
     def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
         
         fronts, rank = self.fast_non_dominated_sort(pop)
         pop_temp = {}
+        
+        for front in fronts:
+            stop = False
+            for id in front:
+                key = list(pop.keys())[id]
+                _idx = uuid4().hex
+                pop_temp[_idx] = pop[key]
+                if len(pop_temp) == self.old_pop_rate * self.pop_size:
+                    stop = True
+                    break
+            if stop:
+                break
             
         # Generating offsprings
         while (len(pop_temp) < 2 * self.pop_size):
@@ -47,9 +60,6 @@ class BaseNSGA_III(Root2):
             last += 1
             if last == len(fronts):
                 break
-            
-        while len(fronts) > last + 1:
-            fronts.pop()        # remove useless individual
         
         for i in range(last - 1):
             for idx in fronts[i]:

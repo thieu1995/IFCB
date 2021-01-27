@@ -14,12 +14,13 @@ from optimizer.root import Root
 from numpy import array, inf, zeros, argmin, sqrt, hstack
 from numpy import sum, where, ones, dot, power, subtract, multiply
 from numpy import min as np_min
-from numpy.random import uniform, random
+from numpy.random import uniform, random, randint
 from random import randint
 from utils.schedule_util import matrix_to_schedule
 from uuid import uuid4
 from copy import deepcopy
 
+from visualization.visual import visualize
 
 class Root2(Root):
     ID_IDX = 0
@@ -294,6 +295,14 @@ class Root2(Root):
         chosen = -1 
         
         if len(reference_points) > 0:
+            chosen = reference_points[randint(0, len(reference_points) - 1)][0]
+        
+        return chosen
+
+    def select_cluster_member_2(self, reference_points:list, n_mems:int, rank:list):
+        chosen = -1 
+        
+        if len(reference_points) > 0:
             min_rank = np_min([rank[r[0]] for r in reference_points])
             for rp in reference_points:
                 if rank[rp[0]] == min_rank:
@@ -322,6 +331,12 @@ class Root2(Root):
             print(f'Training by: epoch (mode) with: {self.epoch} epochs, {time_bound_log}')
             g_best_dict = {}
             for epoch in range(self.epoch):
+                data = [[] for i in range(self.n_objs)]
+                for f in range(self.n_objs):
+                    for it in range(len(pop)):
+                        idx = list(pop.keys())[it]
+                        data[f].append(pop[idx][self.ID_FIT][f])
+                visualize('vis_' + str(epoch), data)
                 time_epoch_start = time()
                 pop = self.evolve(pop, None, epoch, None)
                 fronts, rank = self.fast_non_dominated_sort(pop)
