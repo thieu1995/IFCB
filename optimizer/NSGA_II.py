@@ -7,7 +7,6 @@
 #       Github:     https://github.com/thieu1995                                                        %
 # ------------------------------------------------------------------------------------------------------%
 
-from copy import deepcopy
 from optimizer.root2 import Root2
 from numpy.random import choice
 from numpy import array, where
@@ -27,7 +26,6 @@ class BaseNSGA_II(Root2):
     def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
         non_dominated_list, rank = self.fast_non_dominated_sort(pop)
         pop_temp = {}
-        
         for front in non_dominated_list:
             stop = False
             for id in front:

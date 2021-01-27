@@ -14,6 +14,9 @@ from uuid import uuid4
 
 
 class BaseNSGA_III(Root2):
+    """
+        The original version of NSGA-III
+    """
     def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, paras=None):
         super().__init__(problem, pop_size, epoch, func_eval, lb, ub)
         if paras is None:
@@ -23,18 +26,14 @@ class BaseNSGA_III(Root2):
         self.cof_divs = paras["cof_divs"]
 
     def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
-        
-        fronts, rank = self.fast_non_dominated_sort(pop)
-        pop_temp = {}
-            
         # Generating offsprings
+        pop_temp = {}
         while (len(pop_temp) < 2 * self.pop_size):
             stt_dad, stt_mom = choice(list(range(0, self.pop_size)), 2, replace=False)
             idx_dad, idx_mom = list(pop.keys())[stt_dad], list(pop.keys())[stt_mom]
             child = self.crossover(pop[idx_dad], pop[idx_mom], self.p_c)
             child = self.mutate(child, self.p_m)
             pop_temp[child[self.ID_IDX]] = child
-            
         pop = deepcopy(pop_temp)
 
         fronts, rank = self.fast_non_dominated_sort(pop)
@@ -57,8 +56,7 @@ class BaseNSGA_III(Root2):
                 _idx = uuid4().hex
                 new_pop[_idx] = deepcopy(pop[key])
                 new_pop[_idx][self.ID_IDX] = _idx
-        
-        
+
         if len(new_pop) == self.pop_size:
             return new_pop
         
@@ -80,9 +78,7 @@ class BaseNSGA_III(Root2):
 
         # Divide the indvs to diff cluster by ref vector
         num_mem, rps_pos = self.associate(reference_points, conv_pop, fronts, last)
-        
-        
-        
+
         while len(new_pop) < self.pop_size:
             min_rp = self.find_niche_reference_point(num_mem, rps_pos)
             chosen = self.select_cluster_member(rps_pos[min_rp], num_mem[min_rp], rank)

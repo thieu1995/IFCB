@@ -299,14 +299,12 @@ class Root2(Root):
         return chosen
 
     def select_cluster_member(self, reference_points:list, n_mems:int, rank:list):
-        chosen = -1 
-        
+        chosen = -1
         if len(reference_points) > 0:
             min_rank = np_min([rank[r[0]] for r in reference_points])
             for rp in reference_points:
                 if rank[rp[0]] == min_rank:
                     chosen = rp[0]
-        
         return chosen
 
     def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):

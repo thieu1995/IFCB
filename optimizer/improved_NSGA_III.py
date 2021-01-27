@@ -24,10 +24,8 @@ class BaseNSGA_III(Root2):
         self.old_pop_rate = paras["old_pop_rate"]
 
     def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
-        
-        fronts, rank = self.fast_non_dominated_sort(pop)
         pop_temp = {}
-        
+        fronts, rank = self.fast_non_dominated_sort(pop)
         for front in fronts:
             stop = False
             for id in front:
@@ -90,9 +88,7 @@ class BaseNSGA_III(Root2):
 
         # Divide the indvs to diff cluster by ref vector
         num_mem, rps_pos = self.associate(reference_points, conv_pop, fronts, last)
-        
-        
-        
+
         while len(new_pop) < self.pop_size:
             min_rp = self.find_niche_reference_point(num_mem, rps_pos)
             chosen = self.select_cluster_member(rps_pos[min_rp], num_mem[min_rp], rank)
