@@ -47,6 +47,11 @@ class Config:
     OBJ_WEIGHTING_MIN_METRICS_1 = [0.2, 0.3, 0.5]
     OBJ_WEIGHTING_MIN_METRICS_2 = [800, 40000, 500]
 
+    VISUAL_FRONTS_COLORS = [u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#d62728', u'#9467bd', u'#8c564b', u'#e377c2', u'#7f7f7f', u'#bcbd22', u'#17becf']
+    # VISUAL_FRONTS_COLORS = ['black', 'limegreen', 'orange', 'darkblue', 'darkcyan', 'lightgreen', 'sandybrown', 'pink', 'red', 'darkviolet']
+    # VISUAL_FRONTS_COLORS = ['black', 'red', 'green', 'blue', 'orange', 'cyan', 'purple', 'pink', 'brown', 'yellow']
+    VISUAL_FRONTS_MARKERS = ["D", "1", "o", '*', "x", "4", ">", "p", "+", "s"]
+
 
 class DefaultData:
     R_PROCESSING_BOUND = [50_000, 500_000]  # 100 KB - 1000 KB (0.1 - 1.0 MB)
@@ -124,23 +129,24 @@ class OptParas:     # Optimizer parameters config
 
 
 class OptExp:       # Optimizer paras in experiments
-    N_TRIALS = 10
-    N_TASKS = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
-    TIME_BOUND_VALUES = [60, 100]
-    POP_SIZE = [50]
-    LB = [-1]
-    UB = [1]
-    EPOCH = [200]
-    FE = [100000]
-    VERBOSE = False
-
-    # N_TRIALS = 1
-    # N_TASKS = [50]
-    # TIME_BOUND_VALUES = [60]
+    # N_TRIALS = 10
+    # N_TASKS = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
+    # TIME_BOUND_VALUES = [60, 100]
     # POP_SIZE = [50]
     # LB = [-1]
     # UB = [1]
-    # EPOCH = [5]
+    # EPOCH = [200]
     # FE = [100000]
-    # VERBOSE = True
+    # VERBOSE = False
+
+    N_TRIALS = 2
+    N_TASKS = [50, 100]
+    TIME_BOUND_VALUES = [60]
+    POP_SIZE = [50]
+    LB = [-1]
+    UB = [1]
+    EPOCH = [5]
+    FE = [100000]
+    VERBOSE = True
+
 

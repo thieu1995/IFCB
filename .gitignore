@@ -1,7 +1,5 @@
 test_nsga_3.py
 
-utils/metric_util.py
-
 optimizer/ALO.py
 benchmark/
 visualization/
