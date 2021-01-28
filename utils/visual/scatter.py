@@ -18,7 +18,7 @@ if platform.system() == "Linux":  # Linux: "Linux", Mac: "Darwin", Windows: "Win
 
 
 def visualize_front_3d(list_points: list, labels:list, names:list, list_color:list, list_marker:list,
-                       filename:str, pathsave: list, exts: list, inside=True):
+                       filename:str, pathsave: list, exts=(".png", ".pdf"), inside=True):
     fig = pyplot.figure()
     if inside:
         ax = fig.add_subplot(111, projection='3d')
@@ -37,6 +37,7 @@ def visualize_front_3d(list_points: list, labels:list, names:list, list_color:li
             xs = points[:, 0:1]
             ys = points[:, 1:2]
             zs = points[:, 2:3]
+
             ax.scatter(xs, ys, zs, c=list_color[idx], marker=list_marker[idx], label=names[idx])
     ax.set_xlabel(labels[0])
     ax.set_ylabel(labels[1])
