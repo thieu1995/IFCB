@@ -99,7 +99,7 @@ def inside_loop(my_model, n_trials, n_timebound, epoch, fe, end_paras):
                 parameters_grid = list(ParameterGrid(my_model["param_grid"]))
                 for paras in parameters_grid:
                     opt = getattr(optimizer, my_model["class"])(problem=problem, pop_size=pop_size, epoch=epoch,
-                                                                func_eval=fe, lb=lb, ub=ub, paras=paras)
+                                                                func_eval=fe, lb=lb, ub=ub, verbose=OptExp.VERBOSE, paras=paras)
                     solutions, g_best, g_best_dict = opt.train()
                     if Config.TIME_BOUND_KEY:
                         results_folder_path = f'{Config.RESULTS_DATA}_{n_timebound}s/{Config.METRICS}/{n_trials}'
@@ -148,8 +148,8 @@ if __name__ == '__main__':
         "n_peers": len(peers),
     }
     models = [
-        # {"name": "NSGA-II", "class": "BaseNSGA_II", "param_grid": OptParas.NSGA_II, "problem": problem},
-        # {"name": "NSGA-III", "class": "BaseNSGA_III", "param_grid": OptParas.NSGA_III, "problem": problem},
+        {"name": "NSGA-II", "class": "BaseNSGA_II", "param_grid": OptParas.NSGA_II, "problem": problem},
+        {"name": "NSGA-III", "class": "BaseNSGA_III", "param_grid": OptParas.NSGA_III, "problem": problem},
         {"name": "MO-SSA", "class": "BaseMO_SSA", "param_grid": OptParas.MO_SSA, "problem": problem},
     ]
 

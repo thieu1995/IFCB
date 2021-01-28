@@ -26,8 +26,8 @@ class Root2(Root):
     ID_POS = 1
     ID_FIT = 2
 
-    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None):
-        super().__init__(problem, pop_size, epoch, func_eval, lb, ub)
+    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, verbose=True):
+        super().__init__(problem, pop_size, epoch, func_eval, lb, ub, verbose)
         self.n_objs = None
         self.WEIGHT = 1e-6
 
@@ -314,18 +314,18 @@ class Root2(Root):
         if Config.METRICS == "pareto" and self.__class__.__name__ not in Config.MULTI_OBJECTIVE_SUPPORTERS:
             print(f'Method: {self.__class__.__name__} doesn"t support pareto-front fitness function type')
             exit()
-        print(f'Start training by: {self.__class__.__name__} algorithm, fitness type: {Config.METRICS}')
+        if self.verbose:
+            print(f'Start training by: {self.__class__.__name__} algorithm, fitness type: {Config.METRICS}')
 
         pop_temp = [self.create_solution() for _ in range(self.pop_size)]
         self.n_objs = len(pop_temp[0][self.ID_FIT])
         pop = {item[self.ID_IDX]: item for item in pop_temp}
 
         time_bound_start = time()
-        time_bound_log = "without time-bound."
-        if Config.TIME_BOUND_KEY:
-            time_bound_log = f'with time-bound: {Config.TIME_BOUND_VALUE} seconds.'
+        time_bound_log = "without time-bound." if Config.TIME_BOUND_KEY else f'with time-bound: {Config.TIME_BOUND_VALUE} seconds.'
         if Config.MODE == 'epoch':
-            print(f'Training by: epoch (mode) with: {self.epoch} epochs, {time_bound_log}')
+            if self.verbose:
+                print(f'Training by: epoch (mode) with: {self.epoch} epochs, {time_bound_log}')
             g_best_dict = {}
             for epoch in range(self.epoch):
                 time_epoch_start = time()
@@ -336,8 +336,9 @@ class Root2(Root):
                     current_best.append(list(pop.values())[it][self.ID_FIT])
                 g_best_dict[epoch] = array(current_best)
                 time_epoch_end = time() - time_epoch_start
-                print(f'Front size: {len(fronts[0])}, including {list(pop.values())[fronts[0][0]][self.ID_FIT]}, '
-                      f'Epoch {epoch + 1} with time: {time_epoch_end:.2f} seconds')
+                if self.verbose:
+                    print(f'Front size: {len(fronts[0])}, including {list(pop.values())[fronts[0][0]][self.ID_FIT]}, '
+                          f'Epoch {epoch + 1} with time: {time_epoch_end:.2f} seconds')
                 if Config.TIME_BOUND_KEY:
                     if time() - time_bound_start >= Config.TIME_BOUND_VALUE:
                         print('====== Over time for training ======')

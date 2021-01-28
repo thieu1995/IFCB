@@ -16,8 +16,8 @@ from utils.schedule_util import matrix_to_schedule
 
 class BaseEO(Root):
 
-    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, paras=None):
-        super().__init__(problem, pop_size, epoch, func_eval, lb, ub)
+    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, verbose=True, paras=None):
+        super().__init__(problem, pop_size, epoch, func_eval, lb, ub, verbose)
         if paras is None:
             paras = {"V": 1.0, "a1": 2.0, "a2": 1.0, "GP": 0.5}
         self.V = paras["V"]

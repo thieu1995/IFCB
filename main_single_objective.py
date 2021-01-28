@@ -141,10 +141,10 @@ if __name__ == '__main__':
         "n_peers": len(peers),
     }
     models = [
-        # {"name": "BaseGA", "param_grid": OptParas.GA, "problem": problem},
-        # {"name": "BasePSO", "param_grid": OptParas.PSO, "problem": problem},
-        # {"name": "BaseWOA", "param_grid": OptParas.WOA, "problem": problem},
-        # {"name": "BaseEO", "param_grid": OptParas.EO, "problem": problem},
+        {"name": "GA", "class": "BaseGA", "param_grid": OptParas.GA, "problem": problem},
+        {"name": "PSO", "class": "BasePSO", "param_grid": OptParas.PSO, "problem": problem},
+        {"name": "WOA", "class": "BaseWOA", "param_grid": OptParas.WOA, "problem": problem},
+        {"name": "EO", "class": "BaseEO", "param_grid": OptParas.EO, "problem": problem},
         {"name": "AEO", "class": "BaseAEO", "param_grid": OptParas.AEO, "problem": problem},
         {"name": "SSA", "class": "BaseSSA", "param_grid": OptParas.SSA, "problem": problem},
     ]

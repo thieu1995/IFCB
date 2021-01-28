@@ -6,9 +6,6 @@ optimizer/ALO.py
 benchmark/
 visualization/
 
-
-data/final_results*
-
 drafts/
 .idea/
 model/blockchain/peer_dpos.py

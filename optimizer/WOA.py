@@ -15,8 +15,8 @@ from utils.schedule_util import matrix_to_schedule
 
 class BaseWOA(Root):
 
-    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, paras=None):
-        super().__init__(problem, pop_size, epoch, func_eval, lb, ub)
+    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, verbose=True, paras=None):
+        super().__init__(problem, pop_size, epoch, func_eval, lb, ub, verbose)
         if paras is None:
             paras = {"p": 0.5, "b": 1.0}
         self.p = paras["p"]

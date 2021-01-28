@@ -23,13 +23,14 @@ class Root:
 
     EPSILON = 10E-10
 
-    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None):
+    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, verbose=True):
         self.problem = problem
         self.pop_size = pop_size
         self.epoch = epoch
         self.func_eval = func_eval
         self.lb = lb
         self.ub = ub
+        self.verbose = verbose
         self.Fit = Fitness(problem)
 
     def create_solution(self):
@@ -121,7 +122,8 @@ class Root:
         if Config.METRICS == "pareto" and self.__class__.__name__ not in Config.MULTI_OBJECTIVE_SUPPORTERS:
             print(f'Method: {self.__class__.__name__} doesn"t support pareto-front fitness function type')
             exit()
-        print(f'Start training by: {self.__class__.__name__} algorithm, fitness type: {Config.METRICS}')
+        if self.verbose:
+            print(f'Start training by: {self.__class__.__name__} algorithm, fitness type: {Config.METRICS}')
         pop = [self.create_solution() for _ in range(self.pop_size)]
         if Config.METRICS in Config.METRICS_MAX:
             g_best = max(pop, key=lambda x: x[self.ID_FIT])
@@ -129,11 +131,10 @@ class Root:
             g_best = min(pop, key=lambda x: x[self.ID_FIT])
         g_best_list = [g_best[self.ID_FIT]]
         time_bound_start = time()
-        time_bound_log = "without time-bound."
-        if Config.TIME_BOUND_KEY:
-            time_bound_log = f'with time-bound: {Config.TIME_BOUND_VALUE} seconds.'
+        time_bound_log = "without time-bound." if Config.TIME_BOUND_KEY else f'with time-bound: {Config.TIME_BOUND_VALUE} seconds.'
         if Config.MODE == 'epoch':
-            print(f'Training by: epoch (mode) with: {self.epoch} epochs, {time_bound_log}')
+            if self.verbose:
+                print(f'Training by: epoch (mode) with: {self.epoch} epochs, {time_bound_log}')
             for epoch in range(self.epoch):
                 time_epoch_start = time()
                 pop = self.evolve(pop, None, epoch, g_best)
@@ -147,16 +148,18 @@ class Root:
                         g_best = deepcopy(current_best)
                 g_best_list.append(g_best[self.ID_FIT])
                 time_epoch_end = time() - time_epoch_start
-                print(f'Current best fit {current_best[self.ID_FIT]:.4f}, '
-                      f'Global best fit {g_best[self.ID_FIT]:.4f}, '
-                      f'Epoch {epoch + 1} with time: {time_epoch_end:.2f} seconds')
+                if self.verbose:
+                    print(f'Current best fit {current_best[self.ID_FIT]:.4f}, '
+                        f'Global best fit {g_best[self.ID_FIT]:.4f}, '
+                        f'Epoch {epoch + 1} with time: {time_epoch_end:.2f} seconds')
                 if Config.TIME_BOUND_KEY:
                     if time() - time_bound_start >= Config.TIME_BOUND_VALUE:
                         print('====== Over time for training ======')
                         break
             return g_best[0], g_best[1], array(g_best_list)
         elif Config.MODE == "fe":
-            print(f'Training by: function evalution (mode) with: {self.func_eval} FE, {time_bound_log}')
+            if self.verbose:
+                print(f'Training by: function evalution (mode) with: {self.func_eval} FE, {time_bound_log}')
             fe_counter = 0
             time_fe_start = time()
             while fe_counter < self.func_eval:
@@ -172,9 +175,10 @@ class Root:
                 g_best_list.append(g_best[self.ID_FIT])
                 fe_counter += counter
                 time_fe_end = time() - time_fe_start
-                print(f'Current best fit {current_best[self.ID_FIT]:.4f}, '
-                      f'Global best fit {g_best[self.ID_FIT]:.4f}, '
-                      f'FE {fe_counter} with time: {time_fe_end:.2f} seconds')
+                if self.verbose:
+                    print(f'Current best fit {current_best[self.ID_FIT]:.4f}, '
+                          f'Global best fit {g_best[self.ID_FIT]:.4f}, '
+                          f'FE {fe_counter} with time: {time_fe_end:.2f} seconds')
                 if Config.TIME_BOUND_KEY:
                     if time() - time_bound_start >= Config.TIME_BOUND_VALUE:
                         print('====== Over time for training ======')

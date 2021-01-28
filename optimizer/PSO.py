@@ -20,8 +20,8 @@ class BasePSO(Root):
     ID_LOCAL_POS = 3        # Personal best location
     ID_LOCAL_FIT = 4        # Personal best fitness
 
-    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, paras=None):
-        super().__init__(problem, pop_size, epoch, func_eval, lb, ub)
+    def __init__(self, problem=None, pop_size=10, epoch=2, func_eval=100000, lb=None, ub=None, verbose=True, paras=None):
+        super().__init__(problem, pop_size, epoch, func_eval, lb, ub, verbose)
         if paras is None:
             paras = {"w_min": 0.4, "w_max": 0.9, "c_local": 1.2, "c_global": 1.2}
         self.w_min = paras["w_min"]
