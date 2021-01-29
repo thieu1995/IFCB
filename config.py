@@ -46,18 +46,18 @@ class Config:
     OBJ_MINMAX_METRICS = [800, 40000, 500]
     OBJ_WEIGHTING_MIN_METRICS_1 = [0.2, 0.3, 0.5]
     OBJ_WEIGHTING_MIN_METRICS_2 = [800, 40000, 500]
-    OBJ_NAME_1 = ["Power Consumption", "Service Latency", "Monetary Cost"]
-    OBJ_NAME_2 = ["Power Consumption", "Service Latency"]
-    OBJ_NAME_3 = ["Power Consumption", "Monetary Cost"]
-    OBJ_NAME_4 = ["Service Latency", "Monetary Cost"]
-    OBJ_NAME_5 = ["Power Consumption"]
-    OBJ_NAME_6 = ["Service Latency"]
-    OBJ_NAME_7 = ["Monetary Cost"]
+    OBJ_NAME_1 = ["Power Consumption (Wh)", "Service Latency (s)", "Monetary Cost ($)"]
+    OBJ_NAME_2 = ["Power Consumption (Wh)", "Service Latency (s)"]
+    OBJ_NAME_3 = ["Power Consumption (Wh)", "Monetary Cost ($)"]
+    OBJ_NAME_4 = ["Service Latency (s)", "Monetary Cost ($)"]
+    OBJ_NAME_5 = ["Power Consumption (Wh)"]
+    OBJ_NAME_6 = ["Service Latency (s)"]
+    OBJ_NAME_7 = ["Monetary Cost ($)"]
 
-    VISUAL_FRONTS_COLORS = [u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#d62728', u'#9467bd', u'#8c564b', u'#e377c2', u'#7f7f7f', u'#bcbd22', u'#17becf']
+    VISUAL_FRONTS_COLORS = [u'#1f77b4', u'#ff7f0e', u'#2ca02c', u'#9467bd', u'#d62728', u'#8c564b', u'#e377c2', u'#7f7f7f', u'#bcbd22', u'#17becf']
     # VISUAL_FRONTS_COLORS = ['black', 'limegreen', 'orange', 'darkblue', 'darkcyan', 'lightgreen', 'sandybrown', 'pink', 'red', 'darkviolet']
     # VISUAL_FRONTS_COLORS = ['black', 'red', 'green', 'blue', 'orange', 'cyan', 'purple', 'pink', 'brown', 'yellow']
-    VISUAL_FRONTS_MARKERS = ["D", "1", "o", '*', "x", "4", ">", "p", "+", "s"]
+    VISUAL_FRONTS_MARKERS = ["D", "1", "o", '*', "+", "x", "4", ">", "p", "s"]
     VISUAL_SAVING = False
     SAVE_TRAINING_RESULTS = True
 

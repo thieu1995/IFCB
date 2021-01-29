@@ -7,7 +7,7 @@
 #       Github:     https://github.com/thieu1995                                                        %
 # ------------------------------------------------------------------------------------------------------%
 
-### Reading all results files to find True pareto-fronts
+### Reading all results files to find True pareto-fronts (Reference Fronts)
 from time import time
 from pathlib import Path
 from copy import deepcopy
@@ -22,14 +22,12 @@ from utils.visual.scatter import visualize_front_3d
 def inside_loop(my_model, n_trials, n_timebound, epoch, fe, end_paras):
     for pop_size in OptExp.POP_SIZE:
         if Config.TIME_BOUND_KEY:
-            results_folder_path = f'{Config.RESULTS_DATA}_{n_timebound}s/{Config.METRICS}/{n_trials}'
+            path_results = f'{Config.RESULTS_DATA}/{n_timebound}s/task_{my_model["problem"]["n_tasks"]}/{Config.METRICS}/{my_model["name"]}/{n_trials}'
         else:
-            results_folder_path = f'{Config.RESULTS_DATA}_no_time_bound/{Config.METRICS}/{n_trials}'
+            path_results = f'{Config.RESULTS_DATA}/no_time_bound/task_{my_model["problem"]["n_tasks"]}/{Config.METRICS}/{my_model["name"]}/{n_trials}'
         name_paras = f'{epoch}_{pop_size}_{end_paras}'
-        experiment_results_path = f'{results_folder_path}/experiment_results/{my_model["name"]}/{name_paras}'
-        file_name = f'{experiment_results_path}/{my_model["problem"]["n_tasks"]}_tasks.csv'
-        header = ["Power", "Latency", "Cost"]
-        df = read_csv(file_name, usecols=header)
+        file_name = f'{path_results}/experiment_results/{name_paras}-results.csv'
+        df = read_csv(file_name, usecols=["Power", "Latency", "Cost"])
         return df.values
 
 def getting_results_for_task(models):
@@ -76,8 +74,8 @@ problem = {
 models = [
     {"name": "NSGA-II", "class": "BaseNSGA_II", "param_grid": OptParas.NSGA_II, "problem": problem},
     {"name": "NSGA-III", "class": "BaseNSGA_III", "param_grid": OptParas.NSGA_III, "problem": problem},
-    {"name": "MO-SSA", "class": "BaseMO_SSA", "param_grid": OptParas.MO_SSA, "problem": problem},
     {"name": "MO-ALO", "class": "BaseMO_ALO", "param_grid": OptParas.MO_ALO, "problem": problem},
+    {"name": "MO-SSA", "class": "BaseMO_SSA", "param_grid": OptParas.MO_SSA, "problem": problem},
 ]
 
 ## Load all results of all trials
@@ -145,25 +143,24 @@ for n_task in OptExp.N_TASKS:
         performance_results_mean.append([n_task, model["name"], er_min, er_max, er_mean, er_std, er_cv, gd_min, gd_max, gd_mean, gd_std, gd_cv,
                                          igd_min, igd_max, igd_mean, igd_std, igd_cv, ste_min, ste_max, ste_mean, ste_std, ste_cv])
 
-    filepath1 = f'{Config.RESULTS_DATA}_no_time_bound/{Config.METRICS}/results_metrics_full_trials_{n_task}.csv'
-    filepath2 = f'{Config.RESULTS_DATA}_no_time_bound/{Config.METRICS}/results_metrics_statistics_{n_task}.csv'
-
+    filepath1 = f'{Config.RESULTS_DATA}/no_time_bound/task_{n_task}/{Config.METRICS}/metrics'
+    Path(filepath1).mkdir(parents=True, exist_ok=True)
     df1 = DataFrame(performance_results, columns=["Task", "Model", "Trial", "ER", "GD", "IGD", "STE"])
-    df1.to_csv(filepath1, index=False)
+    df1.to_csv(f'{filepath1}/full_trials.csv', index=False)
 
     df2 = DataFrame(performance_results_mean, columns=["Task", "Model", "ER-MIN", "ER-MAX", "ER-MEAN", "ER-STD", "ER-CV",
                                                   "GD-MIN", "GD-MAX", "GD-MEAN", "GD-STD", "GD-CV",
                                                   "IGD-MIN", "IGD-MAX", "IGD-MEAN", "IGD-STD", "IGD-CV",
                                                   "STE-MIN", "STE-MAX", "STE-MEAN", "STE-STD", "STE-CV"])
-    df2.to_csv(filepath2, index=False)
+    df2.to_csv(f'{filepath1}/statistics.csv', index=False)
 
 
     ## Drawing some pareto-fronts founded. task --> trial ---> [modle1, model2, model3, ....]
-    filepath3 = f'{Config.RESULTS_DATA}_no_time_bound/{Config.METRICS}/visual/'
+    filepath3 = f'{Config.RESULTS_DATA}/no_time_bound/task_{n_task}/{Config.METRICS}/visual/'
     Path(filepath3).mkdir(parents=True, exist_ok=True)
 
     labels = ["Power Consumption (Wh)", "Service Latency (s)", "Monetary Cost ($)"]
-    names = ["Reference Fronts"]
+    names = ["Reference Front"]
     list_color = [Config.VISUAL_FRONTS_COLORS[0]]
     list_marker = [Config.VISUAL_FRONTS_MARKERS[0]]
     for trial in range(OptExp.N_TRIALS):
