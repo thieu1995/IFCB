@@ -115,6 +115,11 @@ class Root:
                     pop_old[i] = deepcopy(pop_new[i])
         return pop_old
 
+    def adding_element_to_dict(self, obj:dict, key:list, value:list):
+        for idx, k in enumerate(key):
+            obj[k].append(value[idx])
+        return obj
+
     def evolve(self, pop=None, fe_mode=None, epoch=None, g_best=None):
         pass
 

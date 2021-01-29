@@ -311,6 +311,7 @@ class Root2(Root):
         pass
 
     def train(self):
+        time_counting = time()
         if Config.METRICS == "pareto" and self.__class__.__name__ not in Config.MULTI_OBJECTIVE_SUPPORTERS:
             print(f'Method: {self.__class__.__name__} doesn"t support pareto-front fitness function type')
             exit()
@@ -320,9 +321,10 @@ class Root2(Root):
         pop_temp = [self.create_solution() for _ in range(self.pop_size)]
         self.n_objs = len(pop_temp[0][self.ID_FIT])
         pop = {item[self.ID_IDX]: item for item in pop_temp}
+        training_info = {"Epoch": [], "FrontSize": [], "Time": []}
 
         time_bound_start = time()
-        time_bound_log = "without time-bound." if Config.TIME_BOUND_KEY else f'with time-bound: {Config.TIME_BOUND_VALUE} seconds.'
+        time_bound_log = f'with time-bound: {Config.TIME_BOUND_VALUE} seconds.' if Config.TIME_BOUND_KEY else "without time-bound."
         if Config.MODE == 'epoch':
             if self.verbose:
                 print(f'Training by: epoch (mode) with: {self.epoch} epochs, {time_bound_log}')
@@ -336,9 +338,10 @@ class Root2(Root):
                     current_best.append(list(pop.values())[it][self.ID_FIT])
                 g_best_dict[epoch] = array(current_best)
                 time_epoch_end = time() - time_epoch_start
+                training_info = self.adding_element_to_dict(training_info, ["Epoch", "FrontSize", "Time"], [epoch+1, len(fronts[0]), time_epoch_end])
                 if self.verbose:
-                    print(f'Front size: {len(fronts[0])}, including {list(pop.values())[fronts[0][0]][self.ID_FIT]}, '
-                          f'Epoch {epoch + 1} with time: {time_epoch_end:.2f} seconds')
+                    print(f'Epoch: {epoch+1}, Front size: {len(fronts[0])}, including {list(pop.values())[fronts[0][0]][self.ID_FIT]}, '
+                          f'time: {time_epoch_end:.2f} seconds')
                 if Config.TIME_BOUND_KEY:
                     if time() - time_bound_start >= Config.TIME_BOUND_VALUE:
                         print('====== Over time for training ======')
@@ -349,5 +352,7 @@ class Root2(Root):
                 idx = list(pop.keys())[it]
                 solutions[idx] = pop[idx]
                 g_best.append(pop[idx][self.ID_FIT])
-            return solutions, array(g_best), g_best_dict
+            time_counting = time() - time_counting
+            training_info = self.adding_element_to_dict(training_info, ["Epoch", "FrontSize", "Time"], [epoch + 1, len(fronts[0]), time_counting])
+            return solutions, array(g_best), g_best_dict, training_info
 

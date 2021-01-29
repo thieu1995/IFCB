@@ -14,16 +14,19 @@ from numpy import insert, array, concatenate
 from config import Config
 
 
-def save_experiment_results_multi(solutions, g_best, g_best_dict, name_paras, path_results, save_training=True):
+def save_experiment_results_multi(solutions, g_best, g_best_dict, training_info, name_paras, path_results, save_training=True):
     ## Save results
     path_results = f'{path_results}/experiment_results'
     Path(path_results).mkdir(parents=True, exist_ok=True)
+    file_name = f'{path_results}/{name_paras}'
 
     ## Save fitness
     df1 = DataFrame(g_best)
-    file_name = f'{path_results}/{name_paras}'
     df1.index.name = "Solution"
     df1.to_csv(f'{file_name}-results.csv', header=["Power", "Latency", "Cost"], index=True)
+
+    df2 = DataFrame(training_info)
+    df2.to_csv(f'{file_name}-training_info.csv', index=False)
 
     ## Save solution
     schedule_object_save_path = open(f'{file_name}-solution.pkl', 'wb')

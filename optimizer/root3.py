@@ -139,6 +139,7 @@ class Root3(Root):
         pass
 
     def train(self):
+        time_counting = time()
         if Config.METRICS == "pareto" and self.__class__.__name__ not in Config.MULTI_OBJECTIVE_SUPPORTERS:
             print(f'Method: {self.__class__.__name__} doesn"t support pareto-front fitness function type')
             exit()
@@ -153,8 +154,9 @@ class Root3(Root):
         # The best solution which is an archive member and it in the least populated area as an attractant to improve coverage
         global_best = self.find_global_best(pop)            # Helping AntLion only, the results we want is the first-pareto-front
 
+        training_info = {"Epoch": [], "FrontSize": [], "ArchiveSize": [], "Time": []}
         time_bound_start = time()
-        time_bound_log = "without time-bound." if Config.TIME_BOUND_KEY else f'with time-bound: {Config.TIME_BOUND_VALUE} seconds.'
+        time_bound_log = f'with time-bound: {Config.TIME_BOUND_VALUE} seconds.' if Config.TIME_BOUND_KEY else "without time-bound."
         if Config.MODE == 'epoch':
             if self.verbose:
                 print(f'Training by: epoch (mode) with: {self.epoch} epochs, {time_bound_log}')
@@ -185,6 +187,8 @@ class Root3(Root):
                 g_best_dict[epoch] = array(current_best)
 
                 time_epoch_end = time() - time_epoch_start
+                training_info = self.adding_element_to_dict(training_info, ["Epoch", "FrontSize", "ArchiveSize", "Time"],
+                                                            [epoch + 1, len(non_dominated_list), len(pop_archive), time_epoch_end])
                 if self.verbose:
                     print(f'Epoch: {epoch+1}, Front0 size: {len(non_dominated_list)}, Archive size: {len(pop_archive)}, '
                           f'First front0 fit: {g_best_dict[epoch][0]}, with time: {time_epoch_end:.2f} seconds')
@@ -197,5 +201,8 @@ class Root3(Root):
             for idx, value in enumerate(non_dominated_list):
                 if value == 0:
                     g_best.append(pop_new[idx][self.ID_FIT])
-            return solutions, array(g_best), g_best_dict
+            time_counting = time() - time_counting
+            training_info = self.adding_element_to_dict(training_info, ["Epoch", "FrontSize", "ArchiveSize", "Time"],
+                                                        [epoch + 1, len(non_dominated_list), len(pop_archive), time_counting])
+            return solutions, array(g_best), g_best_dict, training_info
 
