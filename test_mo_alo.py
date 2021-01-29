@@ -40,7 +40,8 @@ def inside_loop(my_model, n_trials, n_timebound, epoch, fe, end_paras):
                     name_paras = f'{epoch}_{pop_size}_{end_paras}'
                     save_training_fitness_information(g_best_dict, len(tasks), my_model["name"], name_paras, results_folder_path)
                     save_experiment_result(problem, solutions, g_best, my_model["name"], name_paras, results_folder_path)
-                    save_visualization(problem, g_best, my_model["name"], name_paras, results_folder_path)
+                    if Config.VISUAL_SAVING:
+                        save_visualization(problem, g_best, my_model["name"], name_paras, results_folder_path)
 
 
 def setting_and_running(my_model):

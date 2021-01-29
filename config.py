@@ -15,7 +15,7 @@ basedir = abspath(dirname(__file__))
 class Config:
     CORE_DATA_DIR = f'{basedir}/data'
     INPUT_DATA = f'{CORE_DATA_DIR}/input_data'
-    RESULTS_DATA = f'{CORE_DATA_DIR}/final_results'
+    RESULTS_DATA = f'{CORE_DATA_DIR}/results_100loop'
     MODE = 'epoch'  # epoch, fe (function evaluation counter instead of epoch)
     TIME_BOUND_KEY = False  # time bound for the training process
     TIME_BOUND_VALUE = 100
@@ -51,6 +51,7 @@ class Config:
     # VISUAL_FRONTS_COLORS = ['black', 'limegreen', 'orange', 'darkblue', 'darkcyan', 'lightgreen', 'sandybrown', 'pink', 'red', 'darkviolet']
     # VISUAL_FRONTS_COLORS = ['black', 'red', 'green', 'blue', 'orange', 'cyan', 'purple', 'pink', 'brown', 'yellow']
     VISUAL_FRONTS_MARKERS = ["D", "1", "o", '*', "x", "4", ">", "p", "+", "s"]
+    VISUAL_SAVING = False
 
 
 class DefaultData:
@@ -129,24 +130,24 @@ class OptParas:     # Optimizer parameters config
 
 
 class OptExp:       # Optimizer paras in experiments
-    # N_TRIALS = 10
-    # N_TASKS = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
-    # TIME_BOUND_VALUES = [60, 100]
-    # POP_SIZE = [50]
-    # LB = [-1]
-    # UB = [1]
-    # EPOCH = [200]
-    # FE = [100000]
-    # VERBOSE = False
-
-    N_TRIALS = 2
-    N_TASKS = [50, 100]
-    TIME_BOUND_VALUES = [60]
+    N_TRIALS = 10
+    N_TASKS = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
+    TIME_BOUND_VALUES = [60, 100]
     POP_SIZE = [50]
     LB = [-1]
     UB = [1]
-    EPOCH = [5]
+    EPOCH = [100]
     FE = [100000]
-    VERBOSE = True
+    VERBOSE = False
+
+    # N_TRIALS = 2
+    # N_TASKS = [50, 100]
+    # TIME_BOUND_VALUES = [60]
+    # POP_SIZE = [50]
+    # LB = [-1]
+    # UB = [1]
+    # EPOCH = [5]
+    # FE = [100000]
+    # VERBOSE = True
 
 
