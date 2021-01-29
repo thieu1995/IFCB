@@ -33,15 +33,14 @@ def inside_loop(my_model, n_trials, n_timebound, epoch, fe, end_paras):
                                                                 func_eval=fe, lb=lb, ub=ub, verbose=OptExp.VERBOSE, paras=paras)
                     solutions, g_best, g_best_dict = opt.train()
                     if Config.TIME_BOUND_KEY:
-                        results_folder_path = f'{Config.RESULTS_DATA}_{n_timebound}s/{Config.METRICS}/{n_trials}'
+                        path_results = f'{Config.RESULTS_DATA}/{n_timebound}s/task_{n_tasks}/{Config.METRICS}/{my_model["name"]}/{n_trials}'
                     else:
-                        results_folder_path = f'{Config.RESULTS_DATA}_no_time_bound/{Config.METRICS}/{n_trials}'
-                    Path(results_folder_path).mkdir(parents=True, exist_ok=True)
+                        path_results = f'{Config.RESULTS_DATA}/no_time_bound/task_{n_tasks}/{Config.METRICS}/{my_model["name"]}/{n_trials}'
+                    Path(path_results).mkdir(parents=True, exist_ok=True)
                     name_paras = f'{epoch}_{pop_size}_{end_paras}'
-                    save_training_fitness_information(g_best_dict, len(tasks), my_model["name"], name_paras, results_folder_path)
-                    save_experiment_result(problem, solutions, g_best, my_model["name"], name_paras, results_folder_path)
+                    save_experiment_results_multi(solutions, g_best, g_best_dict, name_paras, path_results)
                     if Config.VISUAL_SAVING:
-                        save_visualization(problem, g_best, my_model["name"], name_paras, results_folder_path)
+                        save_visualization_results_multi(solutions, my_model["name"], name_paras, path_results)
 
 
 def setting_and_running(my_model):
