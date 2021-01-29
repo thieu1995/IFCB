@@ -81,7 +81,36 @@ https://yafs.readthedocs.io/en/latest/examples/tutorial_example.html
     + #dim = 10 * 500 = 5000
     + 1 epoch: 50 - 100 seconds ---> 1000 epochs: 50000 - 100000 seconds --> 1 Algo with 1 trial: 14-hour to 28 hours
 
+```
 
 
+
+## Install Environment
+
+```code
+conda create -n ai python==3.8.5
+conda install numpy
+conda install pandas
+conda install -c conda-forge matplotlib
+conda install -c anaconda scikit-learn
 
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
