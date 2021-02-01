@@ -11,7 +11,7 @@ from time import time
 from config import Config
 from sys import exit
 from optimizer.root import Root
-from numpy import array, inf, zeros, all, any, cumsum, delete, ones, min, max
+from numpy import array, inf, zeros, all, any, cumsum, delete, ones, min, max, sum
 from numpy.random import uniform
 from utils.schedule_util import matrix_to_schedule
 from uuid import uuid4
@@ -73,17 +73,29 @@ class Root3(Root):
                     list_dominated[i] = 1
         return list_dominated
 
-    def update_pop_archive(self, pop_archive, pop_current):
-        list_solutions = pop_archive + pop_current
-        size = len(list_solutions)
-        list_dominated = self.find_dominates_list(list_solutions)
-        pop_archive = []
-        archive_fits = []
+    def update_pop_archive(self, pop_archive):
+        size = len(pop_archive)
+        list_dominated = self.find_dominates_list(pop_archive)
+        pop = []
+        fits = []
+        ## If all non-dominated --> Save all and remove some duplicate one
+        if sum(list_dominated) == 0 or sum(list_dominated) == len(list_dominated):
+            for i, solution in enumerate(pop_archive):
+                flag = False
+                for j in range(i + 1, size):
+                    if all(pop_archive[i][self.ID_FIT] == pop_archive[j][self.ID_FIT]):
+                        flag = True
+                        break
+                if not flag:
+                    pop.append(solution)
+                    fits.append(solution[self.ID_FIT])
+            return pop, fits
+        ## Else just save non-dominated solutions
         for i in range(0, size):
             if list_dominated[i] == 0:
-                pop_archive.append(list_solutions[i])
-                archive_fits.append(list_solutions[i][self.ID_FIT])
-        return pop_archive, archive_fits
+                pop.append(pop_archive[i])
+                fits.append(pop_archive[i][self.ID_FIT])
+        return pop, fits
 
     def neighbourhood_ranking(self, archive_fits, division=20):
         size = len(archive_fits)
@@ -165,7 +177,8 @@ class Root3(Root):
 
                 pop = self.evolve2(pop, pop_archive, None, epoch, global_best)
 
-                pop_archive, archive_fits = self.update_pop_archive(pop_archive, pop)
+                pop_new = pop_archive + pop
+                pop_archive, archive_fits = self.update_pop_archive(pop_new)
                 if len(pop_archive) > self.pop_size:
                     archive_ranks = self.neighbourhood_ranking(archive_fits)
                     pop_archive, archive_fits, archive_ranks = self.handle_full_archive(pop_archive, archive_fits, archive_ranks, self.pop_size)

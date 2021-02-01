@@ -154,7 +154,7 @@ class OptExp:       # Optimizer paras in experiments
     # POP_SIZE = [50]
     # LB = [-1]
     # UB = [1]
-    # EPOCH = [5]
+    # EPOCH = [3]
     # FE = [100000]
     # VERBOSE = True
 

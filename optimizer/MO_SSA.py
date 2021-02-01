@@ -9,8 +9,7 @@
 
 from optimizer.root3 import Root3
 from numpy.random import uniform, randint, normal, choice
-from numpy import min, max, cumsum, reshape, sum, exp, ones, where, sign, sqrt, matmul
-from numpy.linalg import inv
+from numpy import min, max, cumsum, reshape, sum, exp, ones, where, sqrt
 from utils.schedule_util import matrix_to_schedule
 from uuid import uuid4
 
@@ -24,62 +23,58 @@ class BaseMO_SSA(Root3):
         self.PD = paras["PD"]  # number of producers                        --> In MO: this is the first-front
         self.SD = paras["SD"]  # number of sparrows who perceive the danger --> In MO: this is the last-front
 
+    def sort_population(self, pop:list):
+        pop_first, pop_last = [], []
+        size = len(pop)
+        dominated_list = self.find_dominates_list(pop)
+        for i in range(0, size):
+            if dominated_list[i] == 0:
+                pop_first.append(pop[i])
+            else:
+                pop_last.append(pop[i])
+        return pop_first + pop_last
+
     def evolve2(self, pop: list, pop_archive: list, fe_mode=None, epoch=None, g_best=None):
         # Updating population by SSA-equations.
+        pop = self.sort_population(pop)
         global_best_pos = g_best[self.ID_POS]
-        random_solution = pop_archive[randint(0, len(pop_archive))][self.ID_POS].flatten()
+        random_solution = pop_archive[randint(0, len(pop_archive))]
 
         dominated_list = self.find_dominates_list(pop)
         n1_invert = sum(dominated_list)             ## number of dominated
-        n1 = int(self.pop_size - n1_invert)         ## number of non-dominated -> current best
+        n1 = int(self.pop_size - n1_invert)         ## number of non-dominated -> producers
         n2 = int(self.SD * self.pop_size)
-        if n1 < 5 or n1 > self.pop_size - 5:
-            n1 = int(self.PD * self.pop_size)
-        ## Find current worst
-        worst_list = where(dominated_list == 1)[0]
-        worst_idx = choice(list(range(0, self.pop_size)))
-        if len(worst_list) != 0:
-            worst_idx = choice(worst_list)
-        current_worst = pop[worst_idx]
 
-        r2 = uniform()  # R2 in [0, 1], the alarm value, random value
         # Using equation (3) update the sparrow’s location;
         for i in range(0, n1):
-            if r2 < self.ST:
-                x_new = pop[i][self.ID_POS] * exp((epoch + 1) / self.epoch)
-            else:
-                x_new = pop[i][self.ID_POS] + normal() * ones(self.problem["shape"])
             while True:
-                child = self.amend_position_random(uniform() * x_new)
+                if uniform() < self.ST:  # R2 in [0, 1], the alarm value, random value
+                    x_new = pop[i][self.ID_POS] * exp((epoch + 1) / self.epoch)
+                else:
+                    x_new = pop[i][self.ID_POS] + normal() * ones(self.problem["shape"])
+                child = self.amend_position_random(x_new)
                 schedule = matrix_to_schedule(self.problem, child)
                 if schedule.is_valid():
                     fit = self.Fit.fitness(schedule)
                     idx = uuid4().hex
                     break
             pop[i] = [idx, child, fit]
-
-        ## Find current best
-        pop_archive, archive_fits = self.update_pop_archive(pop_archive, pop[:n1])
-        archive_ranks = self.neighbourhood_ranking(archive_fits)
-        idx = self.roulette_wheel_selection(1.0 / archive_ranks)
-        idx = choice(list(range(0, len(pop_archive)))) if idx == -1 else idx
-        current_best = pop_archive[idx]
 
         # Using equation (4) update the sparrow’s location;
-        shape = current_best[self.ID_POS].shape
+        shape = g_best[self.ID_POS].shape
         for i in range(n1, self.pop_size):
-
-            if i > int(self.pop_size / 2):
-                x_new = normal() * exp((current_worst[self.ID_POS] - pop[i][self.ID_POS]) / ((i + 1) ** 2))
-            else:
-                A = sign(uniform(-1, 1, (1, shape[0]*shape[1])))
-                A1 = matmul(A.T, inv(matmul(A, A.T)))
-                A1 = matmul(A1, ones((1, shape[0]*shape[1])))
-                temp = reshape(abs(pop[i][self.ID_POS] - current_best[self.ID_POS]), (shape[0] * shape[1]))
-                temp = matmul(temp, A1)
-                x_new = current_best[self.ID_POS] + reshape(temp, shape)
             while True:
-                child = self.amend_position_random(uniform() * x_new)
+                if i > int(self.pop_size / 2):
+                    x_new = normal() * exp((random_solution[self.ID_POS] - pop[i][self.ID_POS]) / ((i + 1) ** 2))
+                else:
+                    # A = sign(uniform(-1, 1, (1, shape[0]*shape[1])))
+                    # A1 = matmul(A.T, inv(matmul(A, A.T)))
+                    # A1 = matmul(A1, ones((1, shape[0]*shape[1])))
+                    # temp = reshape(abs(pop[i][self.ID_POS] - global_best_pos), (shape[0] * shape[1]))
+                    # temp = matmul(temp, A1)
+                    # x_new = global_best_pos + uniform() * reshape(temp, shape)
+                    x_new = global_best_pos + normal(0, 1, shape) * abs(pop[i][self.ID_POS] - global_best_pos)
+                child = self.amend_position_random(x_new)
                 schedule = matrix_to_schedule(self.problem, child)
                 if schedule.is_valid():
                     fit = self.Fit.fitness(schedule)
@@ -87,7 +82,7 @@ class BaseMO_SSA(Root3):
                     break
             pop[i] = [idx, child, fit]
 
-        #  Using equation (5) update the sparrow’s location;
+        ## Using equation (5) update the sparrow’s location;
         n2_list = choice(list(range(0, self.pop_size)), n2, replace=False)
         dominated_list = self.find_dominates_list(pop)
         non_dominated_list = where(dominated_list == 0)[0]
@@ -95,10 +90,10 @@ class BaseMO_SSA(Root3):
             if i in non_dominated_list:
                 x_new = global_best_pos + normal() * abs(pop[i][self.ID_POS] - global_best_pos)
             else:
-                dist = sum(sqrt((pop[i][self.ID_FIT] - current_worst[self.ID_FIT]) ** 2))
+                dist = sum(sqrt((pop[i][self.ID_FIT] - g_best[self.ID_FIT]) ** 2))
                 x_new = pop[i][self.ID_POS] + uniform(-1, 1) * (abs(pop[i][self.ID_POS] - global_best_pos) / (dist + self.EPSILON))
             while True:
-                child = self.amend_position_random(uniform()* x_new)
+                child = self.amend_position_random(x_new)
                 schedule = matrix_to_schedule(self.problem, child)
                 if schedule.is_valid():
                     fit = self.Fit.fitness(schedule)
