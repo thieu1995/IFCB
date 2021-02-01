@@ -85,7 +85,7 @@ class BaseMO_SSA(Root3):
                     fit = self.Fit.fitness(schedule)
                     idx = uuid4().hex
                     break
-            pop[i] = [idx, x_new, fit]
+            pop[i] = [idx, child, fit]
 
         #  Using equation (5) update the sparrow’s location;
         n2_list = choice(list(range(0, self.pop_size)), n2, replace=False)
@@ -104,5 +104,5 @@ class BaseMO_SSA(Root3):
                     fit = self.Fit.fitness(schedule)
                     idx = uuid4().hex
                     break
-            pop[i] = [idx, x_new, fit]
+            pop[i] = [idx, child, fit]
         return pop
