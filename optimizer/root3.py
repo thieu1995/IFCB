@@ -187,7 +187,7 @@ class Root3(Root):
 
                 ## Choose the archive member in the least populated area as an attractant to improve coverage
                 idx = self.roulette_wheel_selection(1.0 / archive_ranks)
-                idx = 1 if idx == -1 else idx
+                idx = 0 if idx == -1 else idx
                 current_best = pop_archive[idx]
                 global_best = self.update_global_best(global_best, current_best)
 
