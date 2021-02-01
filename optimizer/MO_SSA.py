@@ -46,7 +46,7 @@ class BaseMO_SSA(Root3):
         # Using equation (3) update the sparrow’s location;
         for i in range(0, n1):
             if r2 < self.ST:
-                x_new = pop[i][self.ID_POS] * exp((i + 1) / (uniform(self.EPSILON, 1) * self.epoch))
+                x_new = pop[i][self.ID_POS] * exp((epoch + 1) / self.epoch)
             else:
                 x_new = pop[i][self.ID_POS] + normal() * ones(self.problem["shape"])
             while True:
