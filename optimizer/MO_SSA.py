@@ -70,7 +70,7 @@ class BaseMO_SSA(Root3):
         for i in range(n1, self.pop_size):
 
             if i > int(self.pop_size / 2):
-                x_new = normal() * exp((current_worst[self.ID_POS] - pop[i][self.ID_POS]) / (i + 1) ** 2)
+                x_new = normal() * exp((current_worst[self.ID_POS] - pop[i][self.ID_POS]) / ((i + 1) ** 2))
             else:
                 A = sign(uniform(-1, 1, (1, shape[0]*shape[1])))
                 A1 = matmul(A.T, inv(matmul(A, A.T)))
