@@ -15,5 +15,6 @@ from .AEO import BaseAEO
 from .SSA import BaseSSA
 from .NSGA_II import BaseNSGA_II
 from .NSGA_III import BaseNSGA_III
-from .MO_SSA import BaseMO_SSA
 from .MO_ALO import BaseMO_ALO
+from .NS_SSA import BaseNS_SSA
+from .MO_SSA import BaseMO_SSA
