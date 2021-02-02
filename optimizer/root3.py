@@ -197,7 +197,7 @@ class Root3(Root):
                 for idx, value in enumerate(non_dominated_list):
                     if value == 0:
                         current_best.append(pop_new[idx][self.ID_FIT])
-                g_best_dict[epoch] = array(current_best)
+                g_best_dict[epoch + 1] = array(current_best)
 
                 time_epoch_end = time() - time_epoch_start
                 training_info = self.adding_element_to_dict(training_info, ["Epoch", "FrontSize", "ArchiveSize", "Time"],

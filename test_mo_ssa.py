@@ -8,7 +8,6 @@
 # ------------------------------------------------------------------------------------------------------%
 
 from sklearn.model_selection import ParameterGrid
-import multiprocessing
 from time import time
 from copy import deepcopy
 from config import OptExp, OptParas
@@ -81,7 +80,7 @@ if __name__ == '__main__':
     models = [
         # {"name": "NSGA-II", "class": "BaseNSGA_II", "param_grid": OptParas.NSGA_II, "problem": problem},
         # {"name": "NSGA-III", "class": "BaseNSGA_III", "param_grid": OptParas.NSGA_III, "problem": problem},
-        {"name": "MO-ALO", "class": "BaseMO_ALO", "param_grid": OptParas.MO_ALO, "problem": problem},
+        # {"name": "MO-ALO", "class": "BaseMO_ALO", "param_grid": OptParas.MO_ALO, "problem": problem},
         {"name": "MO-SSA", "class": "BaseMO_SSA", "param_grid": OptParas.MO_SSA, "problem": problem},
         # {"name": "NS-SSA", "class": "BaseNS_SSA", "param_grid": OptParas.MO_SSA, "problem": problem},
     ]

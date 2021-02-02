@@ -10,7 +10,7 @@
 from pathlib import Path
 from pandas import DataFrame
 import pickle as pkl
-from numpy import insert, array, concatenate
+from numpy import insert, array, concatenate, reshape
 from config import Config
 
 
@@ -37,7 +37,7 @@ def save_experiment_results_multi(solutions, g_best, g_best_dict, training_info,
     if save_training:
         fit_list = array([[0, 0, 0, 0]])
         for key, value in g_best_dict.items():
-            value = insert(value, 0, key, axis=1)
+            value = insert(reshape(value, (-1, 3)), 0, key, axis=1)
             fit_list = concatenate((fit_list, value), axis=0)
         fitness_df = DataFrame(fit_list)
         fitness_df = fitness_df.iloc[1:]

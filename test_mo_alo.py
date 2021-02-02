@@ -14,7 +14,7 @@ from copy import deepcopy
 from config import Config, OptExp, OptParas
 import optimizer
 from utils.io_util import load_tasks, load_nodes
-from utils.experiment_util import save_training_fitness_information, save_experiment_result, save_visualization
+from utils.experiment_util import *
 
 
 def inside_loop(my_model, n_trials, n_timebound, epoch, fe, end_paras):
@@ -31,17 +31,16 @@ def inside_loop(my_model, n_trials, n_timebound, epoch, fe, end_paras):
                 for paras in parameters_grid:
                     opt = getattr(optimizer, my_model["class"])(problem=problem, pop_size=pop_size, epoch=epoch,
                                                                 func_eval=fe, lb=lb, ub=ub, verbose=OptExp.VERBOSE, paras=paras)
-                    solutions, g_best, g_best_dict = opt.train()
+                    solutions, g_best, g_best_dict, training_info = opt.train()
                     if Config.TIME_BOUND_KEY:
-                        results_folder_path = f'{Config.RESULTS_DATA}_{n_timebound}s/{Config.METRICS}/{n_trials}'
+                        path_results = f'{Config.RESULTS_DATA}/{n_timebound}s/task_{n_tasks}/{Config.METRICS}/{my_model["name"]}/{n_trials}'
                     else:
-                        results_folder_path = f'{Config.RESULTS_DATA}_no_time_bound/{Config.METRICS}/{n_trials}'
-                    Path(results_folder_path).mkdir(parents=True, exist_ok=True)
+                        path_results = f'{Config.RESULTS_DATA}/no_time_bound/task_{n_tasks}/{Config.METRICS}/{my_model["name"]}/{n_trials}'
+                    Path(path_results).mkdir(parents=True, exist_ok=True)
                     name_paras = f'{epoch}_{pop_size}_{end_paras}'
-                    save_training_fitness_information(g_best_dict, len(tasks), my_model["name"], name_paras, results_folder_path)
-                    save_experiment_result(problem, solutions, g_best, my_model["name"], name_paras, results_folder_path)
+                    save_experiment_results_multi(solutions, g_best, g_best_dict, training_info, name_paras, path_results)
                     if Config.VISUAL_SAVING:
-                        save_visualization(problem, g_best, my_model["name"], name_paras, results_folder_path)
+                        save_visualization_results_multi(solutions, my_model["name"], name_paras, path_results)
 
 
 def setting_and_running(my_model):
@@ -79,6 +78,7 @@ if __name__ == '__main__':
         "n_fogs": len(fogs),
         "n_peers": len(peers),
     }
+
     models = [
         {"name": "NSGA-II", "class": "BaseNSGA_II", "param_grid": OptParas.NSGA_II, "problem": problem},
         {"name": "NSGA-III", "class": "BaseNSGA_III", "param_grid": OptParas.NSGA_III, "problem": problem},
