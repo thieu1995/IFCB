@@ -9,10 +9,21 @@
 
 from numpy import all, any, zeros, ndarray, min, sqrt, mean, sum, max, abs
 from numpy.linalg import norm
+from pygmo.core import hypervolume
 
 ## GD, IGD, STE: A Comparative Study of Recent Multi-objective Metaheuristics for Solving Constrained Truss Optimisation Problems
 ## ER: Multi-objective particle swarm optimization with random immigrants
 
+## Multi-objectiveEvolutionaryOptimisationforProductDesignandManufacturing.pdf
+##
+##  Metrics for evaluating convergence: error ratio, distance from reference set,...
+##  Metrics for evaluating spread of solutions: spread, spacing,...
+##  Metrics for evaluating certain combinations of convergence and spread of solutions to the known Pareto-optimal front
+##      including: hypervolume, coverage, R-metrics,...
+
+## On metrics for comparing nondominated sets.
+
+## Performance Metrics Ensemble for Multiobjective Evolutionary Algorithms
 
 def dominates(fit_a, fit_b):
     return all(fit_a <= fit_b) and any(fit_a < fit_b)
@@ -36,7 +47,7 @@ def find_dominates_list(list_fit: ndarray):
     return list_dominated
 
 
-def generational_distance(reference_fronts:ndarray, pareto_fronts:ndarray):
+def generational_distance(pareto_fronts: ndarray, reference_fronts:ndarray):
     size_refs = len(reference_fronts)
     size_pars = len(pareto_fronts)
     gd = 0
@@ -46,7 +57,7 @@ def generational_distance(reference_fronts:ndarray, pareto_fronts:ndarray):
     return sqrt(gd) / size_pars
 
 
-def inverted_generational_distance(reference_fronts: ndarray, pareto_fronts: ndarray):
+def inverted_generational_distance(pareto_fronts: ndarray, reference_fronts: ndarray):
     size_refs = len(reference_fronts)
     size_pars = len(pareto_fronts)
     igd = 0
@@ -56,7 +67,7 @@ def inverted_generational_distance(reference_fronts: ndarray, pareto_fronts: nda
     return sqrt(igd) / size_refs
 
 
-def error_ratio(reference_fronts: ndarray, pareto_fronts: ndarray):
+def error_ratio(pareto_fronts: ndarray, reference_fronts: ndarray):
     # Multi-objective particle swarm optimization with random immigrants
     count = 0
     for point in pareto_fronts:
@@ -82,4 +93,29 @@ def spacing_to_extent(pareto_fronts: ndarray):
 
     ste = spacing / extent
     return ste
+
+
+def hyper_volume(pareto_fronts:ndarray, reference_fronts:ndarray, hv_worst_point=None, hv_point=10000):
+    if hv_worst_point is None:
+        print("Need HV worst point")
+        exit(0)
+    hv_pf = hypervolume(pareto_fronts)
+    return hv_pf.compute(hv_worst_point + hv_point)
+
+
+def hyper_area_ratio(pareto_fronts: ndarray, reference_fronts: ndarray, hv_worst_point=None, hv_point=10000):
+    if hv_worst_point is None:
+        print("Need HV worst point")
+        exit(0)
+    hv_pf = hypervolume(pareto_fronts)
+    hv_rf = hypervolume(reference_fronts)
+    hv_point = hv_worst_point + hv_point
+    return hv_pf.compute(hv_point) / hv_rf.compute(hv_point)
+
+
+
+
+
+
+
 

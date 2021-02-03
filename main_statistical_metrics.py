@@ -106,6 +106,7 @@ for n_task in OptExp.N_TASKS:
     ## Find matrix results for each problem
     df_task = df_full[df_full["Task"] == n_task]
     matrix_task = df_task[['Fit1', 'Fit2', 'Fit3']].values
+    hyper_point = max(matrix_task, axis=0)
 
     ## Find non-dominated matrix for each problem
     reference_fronts = zeros((1, 3))
@@ -121,37 +122,48 @@ for n_task in OptExp.N_TASKS:
         gd_list = zeros(OptExp.N_TRIALS)
         igd_list = zeros(OptExp.N_TRIALS)
         ste_list = zeros(OptExp.N_TRIALS)
+        hv_list = zeros(OptExp.N_TRIALS)
+        har_list = zeros(OptExp.N_TRIALS)
 
         for trial in range(OptExp.N_TRIALS):
             df_result = df_task[ (df_task["Model"] == model["name"]) & (df_task["Trial"] == trial) ]
-            pareto_fronts = df_result.values[:,3:]
-            gd = generational_distance(reference_fronts, pareto_fronts)
-            igd = inverted_generational_distance(reference_fronts, pareto_fronts)
-            er = error_ratio(reference_fronts, pareto_fronts)
+            pareto_fronts = array(df_result.values[:, 3:], dtype=float)
+            er = error_ratio(pareto_fronts, reference_fronts)
+            gd = generational_distance(pareto_fronts, reference_fronts)
+            igd = inverted_generational_distance(pareto_fronts, reference_fronts)
             ste = spacing_to_extent(pareto_fronts)
-            performance_results.append([n_task, model["name"], trial, er, gd, igd, ste])
+            hv = hyper_volume(pareto_fronts, reference_fronts, hyper_point, 100)
+            har = hyper_area_ratio(pareto_fronts, reference_fronts, hyper_point, 100)
+            performance_results.append([n_task, model["name"], trial, er, gd, igd, ste, hv, har])
 
             er_list[trial] = er
             gd_list[trial] = gd
             igd_list[trial] = igd
             ste_list[trial] = ste
+            hv_list[trial] = hv
+            har_list[trial] = har
 
         er_min, er_max, er_mean, er_std, er_cv = min(er_list), max(er_list), mean(er_list), std(er_list), std(er_list)/mean(er_list)
         gd_min, gd_max, gd_mean, gd_std, gd_cv = min(gd_list), max(gd_list), mean(gd_list), std(gd_list), std(gd_list)/mean(gd_list)
         igd_min, igd_max, igd_mean, igd_std, igd_cv = min(igd_list), max(igd_list), mean(igd_list), std(igd_list), std(igd_list)/mean(igd_list)
         ste_min, ste_max, ste_mean, ste_std, ste_cv = min(ste_list), max(ste_list), mean(ste_list), std(ste_list), std(ste_list)/mean(ste_list)
+        hv_min, hv_max, hv_mean, hv_std, hv_cv = min(hv_list), max(hv_list), mean(hv_list), std(hv_list), std(hv_list) / mean(hv_list)
+        har_min, har_max, har_mean, har_std, har_cv = min(har_list), max(har_list), mean(har_list), std(har_list), std(har_list) / mean(har_list)
         performance_results_mean.append([n_task, model["name"], er_min, er_max, er_mean, er_std, er_cv, gd_min, gd_max, gd_mean, gd_std, gd_cv,
-                                         igd_min, igd_max, igd_mean, igd_std, igd_cv, ste_min, ste_max, ste_mean, ste_std, ste_cv])
+                                         igd_min, igd_max, igd_mean, igd_std, igd_cv, ste_min, ste_max, ste_mean, ste_std, ste_cv,
+                                         hv_min, hv_max, hv_mean, hv_std, hv_cv, har_min, har_max, har_mean, har_std, har_cv])
 
     filepath1 = f'{Config.RESULTS_DATA}/no_time_bound/task_{n_task}/{Config.METRICS}/metrics'
     Path(filepath1).mkdir(parents=True, exist_ok=True)
-    df1 = DataFrame(performance_results, columns=["Task", "Model", "Trial", "ER", "GD", "IGD", "STE"])
+    df1 = DataFrame(performance_results, columns=["Task", "Model", "Trial", "ER", "GD", "IGD", "STE", "HV", "HAR"])
     df1.to_csv(f'{filepath1}/full_trials.csv', index=False)
 
     df2 = DataFrame(performance_results_mean, columns=["Task", "Model", "ER-MIN", "ER-MAX", "ER-MEAN", "ER-STD", "ER-CV",
                                                   "GD-MIN", "GD-MAX", "GD-MEAN", "GD-STD", "GD-CV",
                                                   "IGD-MIN", "IGD-MAX", "IGD-MEAN", "IGD-STD", "IGD-CV",
-                                                  "STE-MIN", "STE-MAX", "STE-MEAN", "STE-STD", "STE-CV"])
+                                                  "STE-MIN", "STE-MAX", "STE-MEAN", "STE-STD", "STE-CV",
+                                                       "HV-MIN", "HV-MAX", "HV-MEAN", "HV-STD", "HV-CV",
+                                                       "HAR-MIN", "HAR-MAX", "HAR-MEAN", "HAR-STD", "HAR-CV"])
     df2.to_csv(f'{filepath1}/statistics.csv', index=False)
 
 
