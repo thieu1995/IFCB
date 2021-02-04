@@ -9,7 +9,7 @@
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from numpy import arange, zeros, ones
+from numpy import arange, zeros, ones, ndarray
 import platform
 
 
@@ -69,6 +69,57 @@ def bar_chart_3d(list_g_bests: list, labels: list, names: list, list_color: list
     plt.close()
 
 
+def group_bar2d(groups:list, data:list, models:list, xy_labels:list, title:str, pathsave:list,
+                filename:str, exts:list, auto_label=True):
+    import matplotlib
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    nsgaii = data[0]
+    nsgaiii = data[1]
+    moalo = data[2]
+    mossa = data[3]
+
+    x = np.arange(len(groups))  # the label locations
+    width = 0.2  # the width of the bars
+
+    fig, ax = plt.subplots()
+    rects1 = ax.bar(x, nsgaii, width, label=models[0])
+    rects2 = ax.bar(x + 1.0*width, nsgaiii, width, label=models[1])
+    rects3 = ax.bar(x + 2.0*width, moalo, width, label=models[2])
+    rects4 = ax.bar(x + 3.0*width, mossa, width, label=models[3])
+
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_ylabel(xy_labels[1])
+    ax.set_xlabel(xy_labels[0])
+    ax.set_title(title)
+    ax.set_xticks(x+1.5*width)
+    ax.set_xticklabels(groups)
+    ax.legend()
+
+    def autolabel(rects):
+        """Attach a text label above each bar in *rects*, displaying its height."""
+        for rect in rects:
+            height = rect.get_height()
+            ax.annotate('{}'.format(height),
+                        xy=(rect.get_x() + rect.get_width() / 2, height),
+                        xytext=(0, 3),  # 3 points vertical offset
+                        textcoords="offset points",
+                        ha='center', va='bottom')
+    if auto_label:
+        autolabel(rects1)
+        autolabel(rects2)
+        autolabel(rects3)
+        autolabel(rects4)
+
+    for idx, ext in enumerate(exts):
+        plt.savefig(pathsave[idx] + filename + ext, bbox_inches='tight')
+    if platform.system() != "Linux":
+        plt.show()
+    plt.close()
+
+
+
 def bar_2d_grouped():
     import matplotlib
     import matplotlib.pyplot as plt
@@ -113,4 +164,5 @@ def bar_2d_grouped():
 
     plt.show()
 
-bar_2d_grouped()
+
+# bar_2d_grouped()
