@@ -72,7 +72,7 @@ def error_ratio(pareto_fronts: ndarray, reference_fronts: ndarray):
     count = 0
     for point in pareto_fronts:
         list_flags = [all(point == solution) for solution in reference_fronts]
-        if not all(list_flags):
+        if not any(list_flags):
             count += 1
     return count/len(reference_fronts)
 
