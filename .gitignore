@@ -1,4 +1,5 @@
 test_nsga_3.py
+configuration/ICCS/
 
 optimizer/ALO.py
 benchmark/
