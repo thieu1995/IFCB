@@ -94,8 +94,9 @@ class Fitness:
         return la_p + la_t + la_max
 
     def calc_cost(self, schedule: Schedule) -> float:
-        co = cost.data_forwarding_cost(self.clouds, self.fogs, self.peers, self.tasks, schedule)
-        co += cost.computation_cost(self.clouds, self.fogs, self.peers, self.tasks, schedule)
-        co += cost.storage_cost(self.clouds, self.fogs, self.peers, self.tasks, schedule)
-        return co
+        c_df = cost.data_forwarding_cost(self.clouds, self.fogs, self.peers, self.tasks, schedule)
+        c_c = cost.computation_cost(self.clouds, self.fogs, self.peers, self.tasks, schedule)
+        c_s = cost.storage_cost(self.clouds, self.fogs, self.peers, self.tasks, schedule)
+        # print(f"Forwarding: {c_df}, Computation: {c_c}, Storage: {c_s}")
+        return c_df + c_c + c_s
 

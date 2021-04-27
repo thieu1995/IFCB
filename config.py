@@ -15,7 +15,7 @@ basedir = abspath(dirname(__file__))
 class Config:
     CORE_DATA_DIR = f'{basedir}/data'
     INPUT_DATA = f'{CORE_DATA_DIR}/input_data'
-    RESULTS_DATA = f'{CORE_DATA_DIR}/results_100loop'
+    RESULTS_DATA = f'{CORE_DATA_DIR}/results_100loop_2'
     MODE = 'epoch'  # epoch, fe (function evaluation counter instead of epoch)
     TIME_BOUND_KEY = False  # time bound for the training process
     TIME_BOUND_VALUE = 100

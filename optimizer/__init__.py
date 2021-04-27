@@ -18,3 +18,4 @@ from .NSGA_III import BaseNSGA_III
 from .MO_ALO import BaseMO_ALO
 from .NS_SSA import BaseNS_SSA
 from .MO_SSA import BaseMO_SSA
+from .MO_SSA_OLD import BaseMO_SSA_OLD
