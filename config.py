@@ -22,7 +22,7 @@ class Config:
 
     METRICS_MAX = ["weighting-min", ]           # other methods need min - for calculate the global best fitness
     METRICS_NEED_MIN_OBJECTIVE_VALUES = False   # For tunning all parameter to find the min-objective value of each objective.
-    MULTI_OBJECTIVE_SUPPORTERS = ["BaseNSGA_II", "BaseNSGA_III", "BaseMO_SSA", "BaseMO_ALO", "BaseNS_SSA", "LSHADE"]
+    MULTI_OBJECTIVE_SUPPORTERS = ["BaseNSGA_II", "BaseNSGA_III", "BaseMO_SSA", "BaseMO_ALO", "BaseNS_SSA", "LSHADE", 'BaseMO_SSA_OLD']
 
     ### Single Objective
     # 1. power              --> find Min
